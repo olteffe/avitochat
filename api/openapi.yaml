@@ -1,0 +1,185 @@
+openapi: "3.0.2"
+info:
+  title: "Chat server"
+  description: "Цель задания – разработать чат-сервер, предоставляющий HTTP API для работы с чатами и сообщениями
+  пользователя. Подробное задание смотри [здесь](https://https://github.com/olteffe/avitochat/blob/master/task.md)."
+  version: "1.0"
+  termsOfService: "https://example.com/terms"
+  contact:
+    name: "Chat server API"
+    url: "https://example.com/"
+    email: "some_email@e-mail.com"
+  license:
+    name: "GPLv3 (GNU General Public License Version 3)"
+    url: "https://www.gnu.org/licenses/gpl-3.0.txt"
+servers:
+  - url: http://localhost:9000
+paths:
+  /users/add:
+    post:
+      tags:
+        - users
+      summary: "Create new user"
+      description: |
+        "Create new user with ID given in request body. Request body example: {"username": "user_1"}"
+      operationId: createNewUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createUser'
+      responses:
+        "201":
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type:
+                      string
+                    description: user ID
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /chats/add:
+    post:
+      tags:
+        - chats
+      summary: "Create a chat between users"
+      description: |
+        "Create a new chat. Request body example: {"name": "chat_1", "users": ["<USER_ID_1>", "<USER_ID_2>"]}"
+      operationId: createNewChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createChat'
+      responses:
+        "201":
+          description: Chat successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type:
+                      string
+                    description: chat name
+                  users:
+                    type:
+                      array
+                    items:
+                      type:
+                        string
+                    description: userID array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /chats/get:
+    post:
+      tags:
+        - chats
+      summary: "Get all user chats"
+      description: "Get all user chats. Response: a list of all chats with all fields, sorted by the time
+      of last message in the chat (from late to early)"
+      operationId: getAllUserChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/getChat'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type:
+                      string
+                    description: user name
+                  users:
+                    type:
+                      array
+                    items:
+                      type:
+                        string
+                    description: userID array
+        "400":
+          description: Bad Request
+        "404":
+          description: User Not Found
+        "500":
+          description: Internal Server Error
+
+  /messages/add:
+    post:
+      tags:
+        - messages
+      summary: "Send a user message"
+      description: |
+        "Send a user message to the chat room. Request body example: {"chat": "<CHAT_ID>", "author": "<USER_ID>", "text": "hi"}"
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/sendUserMessage'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message_id:
+                    type: string
+        "400":
+          description: Bad Request
+        "404":
+          description: User Not Found
+        "500":
+          description: Internal Server Error
+  /messages/get:
+    post:
+      tags:
+        - messages
+      summary: "Get all chat messages"
+      description: |
+        "Get a list of messages in given chat room. Request body example: {"chat": "<CHAT_ID>"}.
+        Response: a list of all messages with all fields, sorted by the time(from late to early)"
+      operationId: getMessages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/getAllMessages'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/allMessages'
+        "400":
+          description: Bad Request
+        "404":
+          description: User Not Found
+        "500":
+          description: Internal Server Error
+components:
+  schemas:
+
