@@ -5,6 +5,7 @@
 # Project
 notes.txt
 *.http
+gen
 
 
 ### Go template

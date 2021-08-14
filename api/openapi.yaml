@@ -1,8 +1,12 @@
 openapi: "3.0.2"
 info:
   title: "Chat server"
-  description: "Цель задания – разработать чат-сервер, предоставляющий HTTP API для работы с чатами и сообщениями
-  пользователя. Подробное задание смотри [здесь](https://https://github.com/olteffe/avitochat/blob/master/task.md)."
+  description: "**Statement of work:** create simple chat API. *Purpose:* this is a test task for an intern at Avito.
+  *Scope of work:* see [here](https://https://github.com/olteffe/avitochat/blob/master/task.md).
+  *Location of work:* upload to github.com.
+  *Period of performance:* depending on luck.
+  *Applicable standards:* HTTP API.
+  *Acceptance criteria:* UAT."
   version: "1.0"
   termsOfService: "https://example.com/terms"
   contact:
@@ -21,8 +25,8 @@ paths:
         - users
       summary: "Create new user"
       description: |
-        "Create new user with ID given in request body. Request body example: {"username": "user_1"}"
-      operationId: createNewUser
+        "Create a new user with ID given in request body."
+      operationId: createUser
       requestBody:
         required: true
         content:
@@ -35,24 +39,21 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type:
-                      string
-                    description: user ID
+                $ref: '#/components/schemas/createUser_201'
         "400":
-          description: Bad Request
+          description: Bad request
+        "409":
+          description: Username already used
         "500":
-          description: Internal Server Error
+          description: Internal server error
   /chats/add:
     post:
       tags:
         - chats
       summary: "Create a chat between users"
       description: |
-        "Create a new chat. Request body example: {"name": "chat_1", "users": ["<USER_ID_1>", "<USER_ID_2>"]}"
-      operationId: createNewChat
+        "Create a new chat. The chat name must be unique."
+      operationId: createChat
       requestBody:
         required: true
         content:
@@ -65,19 +66,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  name:
-                    type:
-                      string
-                    description: chat name
-                  users:
-                    type:
-                      array
-                    items:
-                      type:
-                        string
-                    description: userID array
+                $ref: '#/components/schemas/createChat_201'
         "400":
           description: Bad Request
         "500":
@@ -88,8 +77,8 @@ paths:
         - chats
       summary: "Get all user chats"
       description: "Get all user chats. Response: a list of all chats with all fields, sorted by the time
-      of last message in the chat (from late to early)"
-      operationId: getAllUserChat
+      of last message in the chat (from late to early)."
+      operationId: getChat
       requestBody:
         required: true
         content:
@@ -102,25 +91,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  user:
-                    type:
-                      string
-                    description: user name
-                  users:
-                    type:
-                      array
-                    items:
-                      type:
-                        string
-                    description: userID array
+                $ref: '#/components/schemas/getChat_200'
         "400":
-          description: Bad Request
+          description: Bad request
         "404":
-          description: User Not Found
+          description: User not found
         "500":
-          description: Internal Server Error
+          description: Internal server error
 
   /messages/add:
     post:
@@ -135,21 +112,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/sendUserMessage'
+              $ref: '#/components/schemas/sendMessage'
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Message sent successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message_id:
-                    type: string
+                $ref: '#/components/schemas/sendMessage_201'
         "400":
-          description: Bad Request
+          description: Bad request
         "404":
-          description: User Not Found
+          description: User or chat not found
         "500":
           description: Internal Server Error
   /messages/get:
@@ -166,20 +140,124 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/getAllMessages'
+              $ref: '#/components/schemas/getMessages'
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/allMessages'
+                $ref: '#/components/schemas/getMessages_200'
         "400":
-          description: Bad Request
+          description: Bad request
         "404":
-          description: User Not Found
+          description: Chat not found
         "500":
-          description: Internal Server Error
+          description: Internal server error
 components:
   schemas:
-
+    createUser:
+      type: object
+      properties:
+        username:
+          type: string
+    createUser_201:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+    createChat:
+      required:
+        - name
+        - users
+      type: object
+      properties:
+        name:
+          type: string
+        users:
+          uniqueItems: true
+          minItems: 2
+          type: array
+          items:
+            type: string
+            format: uuid
+    createChat_201:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+    getChat:
+      required:
+        - user
+      type: object
+      properties:
+        user:
+          type: string
+          format: uuid
+    getChat_200:
+      type: array
+      items:
+        $ref: '#/components/schemas/chat_form'
+    sendMessage:
+      required:
+        - chat
+        - author
+        - text
+      type: object
+      properties:
+        chat:
+          type: string
+          format: uuid
+        author:
+          type: string
+          format: uuid
+        text:
+          type: string
+          minLength: 1
+    sendMessage_201:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+    getMessages:
+      properties:
+        chat:
+          type: string
+          format: uuid
+    getMessages_200:
+      type: array
+      items:
+        $ref: '#/components/schemas/message_form'
+    chat_form:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+            format: uuid
+        created_at:
+          type: string
+          format: date-time
+    message_form:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        author:
+          type: string
+          format: uuid
+        text:
+          type: string
+        created_at:
+          type: string
+          format: date-time
