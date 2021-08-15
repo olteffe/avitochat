@@ -6,7 +6,7 @@
 notes.txt
 *.http
 gen
-
+local
 
 ### Go template
 # Binaries for programs and plugins
