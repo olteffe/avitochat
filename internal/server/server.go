@@ -1,4 +1,4 @@
-package utils
+package server
 
 import (
 	"context"
@@ -51,15 +51,15 @@ func StartServer(quit chan os.Signal, config Config) {
 	e := echo.New()
 
 	// CreateChat - Create a chat between users
-	e.POST("/chats/add", handlers.CreateChat)
+	e.POST("/chats/add", handlers.CreateChatHandler)
 	// GetChat - Get all user chats
-	e.POST("/chats/get", handlers.GetChat)
+	e.POST("/chats/get", handlers.GetChatHandler)
 	// GetMessages - Get all chat messages
-	e.POST("/messages/get", handlers.GetMessages)
+	e.POST("/messages/get", handlers.GetMessagesHandler)
 	// SendMessage - Send a user message
-	e.POST("/messages/add", handlers.SendMessage)
+	e.POST("/messages/add", handlers.SendMessageHandler)
 	// CreateUser - Create new user
-	e.POST("/users/add", handlers.CreateUser)
+	e.POST("/users/add", handlers.CreateUserHandler)
 
 	// Start server
 	go func() {
