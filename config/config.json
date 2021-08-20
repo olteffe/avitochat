@@ -1,0 +1,10 @@
+{
+  "host": "avitochat",
+  "port": 9000,
+
+  "dbHost": "postgres",
+  "dbPort": 5432,
+  "dbUser": "postgres",
+  "dbPassword": "password",
+  "dbName": "postgres"
+}
