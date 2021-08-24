@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/olteffe/avitochat/internal/repository"
+	"github.com/olteffe/avitochat/internal/usecase"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
@@ -49,17 +51,17 @@ func StartServer(quit chan os.Signal, config Config) {
 	}
 
 	e := echo.New()
-
+	chatHandler := handlers.ChatHandler{&usecase.ChatUC{&repository.ChatRep{db}}}
 	// CreateChat - Create a chat between users
-	e.POST("/chats/add", handlers.CreateChatHandler)
+	e.POST("/chats/add", chatHandler.CreateChatHandler)
 	// GetChat - Get all user chats
-	e.POST("/chats/get", handlers.GetChatHandler)
+	e.POST("/chats/get", chatHandler.GetChatHandler)
 	// GetMessages - Get all chat messages
-	e.POST("/messages/get", handlers.GetMessagesHandler)
+	e.POST("/messages/get", chatHandler.GetMessagesHandler)
 	// SendMessage - Send a user message
-	e.POST("/messages/add", handlers.SendMessageHandler)
+	e.POST("/messages/add", chatHandler.SendMessageHandler)
 	// CreateUser - Create new user
-	e.POST("/users/add", handlers.CreateUserHandler)
+	e.POST("/users/add", chatHandler.CreateUserHandler)
 
 	// Start server
 	go func() {

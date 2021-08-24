@@ -4,7 +4,6 @@
 -- Set timezone
 SET TIMEZONE="Europe/Moscow";
 
-
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -30,3 +29,5 @@ CREATE TABLE IF NOT EXISTS messages (
     text TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+CREATE INDEX CONCURRENTLY users_username_index ON users (username);
