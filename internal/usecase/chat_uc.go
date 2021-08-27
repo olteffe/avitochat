@@ -2,19 +2,24 @@ package usecase
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"time"
 
-	"github.com/olteffe/avitochat/internal"
+	"github.com/google/uuid"
 	"github.com/olteffe/avitochat/internal/models"
+	"github.com/olteffe/avitochat/internal/repository"
 )
 
-type ChatUC struct {
-	ChatRep internal.ChatRepository
+type ChatUseCase struct {
+	repo     repository.Chat
+	userRepo repository.User
+}
+
+func NewChatUseCase(repo repository.Chat, userRepo repository.User) *ChatUseCase {
+	return &ChatUseCase{repo: repo, userRepo: userRepo}
 }
 
 // CreateChatUseCase func
-func (uc *ChatUC) CreateChatUseCase(chat models.Chats) (string, error) {
+func (uc *ChatUseCase) CreateChatUseCase(chat models.Chats) (string, error) {
 	// simple validator for name and users.
 	if chat.Name == "" || len(chat.Name) > 50 {
 		return "", errors.New("invalid chat name")
@@ -23,7 +28,7 @@ func (uc *ChatUC) CreateChatUseCase(chat models.Chats) (string, error) {
 		return "", errors.New("two or more users required")
 	}
 	// uniqueness check
-	existChatName, wrongUsers, err := uc.ChatRep.ExistenceChatName(chat)
+	existChatName, wrongUsers, err := uc.repo.ExistenceChatName(chat)
 	if err != nil {
 		return "", errors.New("cannot validate chat name and users. database error")
 	}
@@ -36,9 +41,9 @@ func (uc *ChatUC) CreateChatUseCase(chat models.Chats) (string, error) {
 	// generate default values
 	chat.ID = uuid.New()
 	chat.CreatedAt = time.Now()
-	return uc.ChatRep.CreateChatRepository(chat)
+	return uc.repo.CreateChatRepository(chat)
 }
 
-func (uc ChatUC) GetChatUseCase() {
+func (uc *ChatUseCase) GetChatUseCase(userId string) ([]*models.Chats, error) {
 	panic("implement me")
 }

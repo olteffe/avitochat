@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/olteffe/avitochat/internal/repository"
-	"github.com/olteffe/avitochat/internal/usecase"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
@@ -13,6 +11,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/olteffe/avitochat/internal/handlers"
+	"github.com/olteffe/avitochat/internal/repository"
+	"github.com/olteffe/avitochat/internal/usecase"
 	"gorm.io/driver/postgres"
 )
 
@@ -50,18 +50,11 @@ func StartServer(quit chan os.Signal, config Config) {
 		log.Fatalf("cannot connect to databse: %v", err.Error())
 	}
 
+	repos := repository.NewRepository(db)
+	usecases := usecase.NewService(repos)
+	handler := handlers.NewHandler(usecases)
 	e := echo.New()
-	chatHandler := handlers.ChatHandler{&usecase.ChatUC{&repository.ChatRep{db}}}
-	// CreateChat - Create a chat between users
-	e.POST("/chats/add", chatHandler.CreateChatHandler)
-	// GetChat - Get all user chats
-	e.POST("/chats/get", chatHandler.GetChatHandler)
-	// GetMessages - Get all chat messages
-	e.POST("/messages/get", chatHandler.GetMessagesHandler)
-	// SendMessage - Send a user message
-	e.POST("/messages/add", chatHandler.SendMessageHandler)
-	// CreateUser - Create new user
-	e.POST("/users/add", chatHandler.CreateUserHandler)
+	handler.Init(e)
 
 	// Start server
 	go func() {

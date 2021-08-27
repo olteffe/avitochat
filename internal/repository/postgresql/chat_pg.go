@@ -1,4 +1,4 @@
-package repository
+package postgresql
 
 import (
 	"errors"
@@ -6,14 +6,18 @@ import (
 	"gorm.io/gorm"
 )
 
-type ChatRep struct {
-	DB *gorm.DB
+type ChatPg struct {
+	db *gorm.DB
+}
+
+func NewChatPg(db *gorm.DB) *ChatPg {
+	return &ChatPg{db: db}
 }
 
 // CreateChatRepository func create a new chat
-func (rep *ChatRep) CreateChatRepository(chat models.Chats) (string, error) {
+func (pg *ChatPg) CreateChatRepository(chat models.Chats) (string, error) {
 	// begin transaction
-	tx := rep.DB.Begin()
+	tx := pg.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -31,19 +35,19 @@ func (rep *ChatRep) CreateChatRepository(chat models.Chats) (string, error) {
 		tx.Exec("INSERT INTO online (chat_id, user_id) VALUES (?, ?)", chat.ID, userID)
 	}
 	return chat.ID.String(), tx.Commit().Error
-	// end transaction
+	// end transaction if return err != nil
 }
 
 // ExistenceChatName func check chat name and users in database
-func (rep *ChatRep) ExistenceChatName(chat models.Chats) (bool, bool, error) {
-	rawChat := rep.DB.Table("chats").Limit(1).Where("name = ?", chat.Name).Find(&chat)
+func (pg *ChatPg) ExistenceChatName(chat models.Chats) (bool, bool, error) {
+	rawChat := pg.db.Table("chats").Limit(1).Where("name = ?", chat.Name).Find(&chat)
 	if rawChat.Error != nil && rawChat.Error != gorm.ErrRecordNotFound {
 		return false, false, errors.New("database error")
 	}
 	if countChat := rawChat.RowsAffected; countChat != 0 {
 		return true, false, nil
 	}
-	rawUsers := rep.DB.Table("users").Select("id").Find(&chat, chat.Users)
+	rawUsers := pg.db.Table("users").Select("id").Find(&chat, chat.Users)
 	if rawUsers.Error != nil && rawUsers.Error != gorm.ErrRecordNotFound {
 		return false, false, errors.New("database error")
 	}
@@ -53,6 +57,6 @@ func (rep *ChatRep) ExistenceChatName(chat models.Chats) (bool, bool, error) {
 	return false, false, nil
 }
 
-func (rep *ChatRep) GetChatRepository() {
+func (pg *ChatPg) GetChatRepository(userId string) ([]*models.Chats, error) {
 	panic("implement me")
 }

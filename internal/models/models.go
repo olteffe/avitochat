@@ -6,6 +6,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type Response struct {
+	ID string `json:"id"`
+}
+
 type Chats struct {
 	ID        uuid.UUID `json:"id,omitempty" gorm:"column:id"`
 	Name      string    `json:"name,omitempty" gorm:"column:name"`
