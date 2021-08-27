@@ -9,12 +9,11 @@ import (
 type Chat interface {
 	CreateChatRepository(chat models.Chats) (string, error)
 	ExistenceChatName(chat models.Chats) (bool, bool, error)
-	GetChatUseCase(userId string) ([]*models.Chats, error)
+	GetChatRepository(userId string) ([]*models.Chats, error)
 }
 
 type User interface {
 	CreateUserRepository(user *models.Users) (string, error)
-	ExistenceUserName(userId string) error
 }
 
 type Message interface {

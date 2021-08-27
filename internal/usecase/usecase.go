@@ -7,16 +7,16 @@ import (
 
 type Chat interface {
 	CreateChatUseCase(chat *models.Chats) (string, error)
-	GetChatHandler(userId string) ([]*models.Chats, error)
+	GetChatUseCase(userId string) ([]*models.Chats, error)
 }
 
 type User interface {
-	CreateUserHandler(user *models.Users) (string, error)
+	CreateUserUseCase(user *models.Users) (string, error)
 }
 
 type Message interface {
-	GetMessagesHandler(message *models.Messages) (string, error)
-	SendMessageHandler(chatId string) ([]*models.Messages, error)
+	GetMessagesUseCase(message *models.Messages) (string, error)
+	SendMessageUseCase(chatId string) ([]*models.Messages, error)
 }
 
 type UseCase struct {

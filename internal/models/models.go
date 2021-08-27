@@ -27,8 +27,8 @@ type Messages struct {
 
 type Users struct {
 	ID        uuid.UUID `json:"id,omitempty" gorm:"type:uuid;default:uuid_generate_v4()"`
-	Username  string    `json:"author,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	Username  string    `json:"author,omitempty" gorm:"column:username"`
+	CreatedAt time.Time `json:"created_at,omitempty" gorm:"column:created_at"`
 }
 
 type Online struct {

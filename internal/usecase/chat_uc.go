@@ -18,7 +18,7 @@ func NewChatUseCase(repo repository.Chat, userRepo repository.User) *ChatUseCase
 	return &ChatUseCase{repo: repo, userRepo: userRepo}
 }
 
-// CreateChatUseCase func
+// CreateChatUseCase func create new chat
 func (uc *ChatUseCase) CreateChatUseCase(chat models.Chats) (string, error) {
 	// simple validator for name and users.
 	if chat.Name == "" || len(chat.Name) > 50 {
