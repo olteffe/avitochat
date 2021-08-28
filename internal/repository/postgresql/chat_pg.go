@@ -35,7 +35,7 @@ func (pg *ChatPg) CreateChatRepository(chat models.Chats) (string, error) {
 		tx.Exec("INSERT INTO online (chat_id, user_id) VALUES (?, ?)", chat.ID, userID)
 	}
 	return chat.ID.String(), tx.Commit().Error
-	// end transaction if return err != nil
+	// end transaction if return (id, err == nil)
 }
 
 // ExistenceChatName func check chat name and users in database

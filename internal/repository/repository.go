@@ -18,7 +18,8 @@ type User interface {
 
 type Message interface {
 	GetMessagesRepository(chatId string) ([]*models.Messages, error)
-	SendMessageRepository(message *models.Messages) (string, error)
+	ExistenceChatAuthor(chat models.Messages) (bool, error)
+	SendMessageRepository(message models.Messages) (string, error)
 }
 
 type Repository struct {
