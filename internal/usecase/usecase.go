@@ -16,7 +16,7 @@ type User interface {
 
 type Message interface {
 	SendMessageUseCase(message models.Messages) (string, error)
-	GetMessagesUseCase(chatId string) ([]*models.Messages, error)
+	GetMessagesUseCase(chatID string) ([]*models.Messages, error)
 }
 
 type UseCase struct {

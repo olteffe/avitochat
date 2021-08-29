@@ -57,6 +57,13 @@ func (pg *ChatPg) ExistenceChatName(chat models.Chats) (bool, bool, error) {
 	return false, false, nil
 }
 
-func (pg *ChatPg) GetChatRepository(userId string) ([]*models.Chats, error) {
-	panic("implement me")
+// GetChatRepository - Get user chats
+func (pg *ChatPg) GetChatRepository(userID string) ([]*models.Chats, error) {
+	var allChats []*models.Chats
+	chats := pg.db.Table("chats").Where("user_id = ?", userID).
+		Order("created_at desc").Scan(&allChats)
+	if chats.Error != nil {
+		return nil, chats.Error
+	}
+	return allChats, nil
 }

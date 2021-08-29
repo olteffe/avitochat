@@ -22,8 +22,15 @@ func NewMessageUseCase(repo repository.Message, userRepo repository.User, chatRe
 	}
 }
 
-func (uc *MessageUseCase) GetMessagesUseCase(chatId string) ([]*models.Messages, error) {
-	panic("implement me")
+func (uc *MessageUseCase) GetMessagesUseCase(chatID string) ([]*models.Messages, error) {
+	if _, err := uuid.Parse(chatID); err != nil {
+		return nil, errors.New("invalid chat ID")
+	}
+	allMessages, err := uc.repo.GetMessagesRepository(chatID)
+	if err != nil {
+		return nil, err
+	}
+	return allMessages, nil
 }
 
 // SendMessageUseCase func send new message

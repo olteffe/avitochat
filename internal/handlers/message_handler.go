@@ -9,6 +9,12 @@ import (
 	"net/http"
 )
 
+// chat used for input data
+type chat struct {
+	ID string `json:"id"`
+}
+
+// initMessageRoutes - Unites paths
 func (h *Handler) initMessageRoutes(api *echo.Group) {
 	messages := api.Group("/messages")
 	{
@@ -19,7 +25,15 @@ func (h *Handler) initMessageRoutes(api *echo.Group) {
 
 // GetMessagesHandler - Get all chat messages
 func (h *Handler) GetMessagesHandler(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, "implement me")
+	var chatID chat
+	if err := ctx.Bind(&chatID); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid chat ID")
+	}
+	allMessages, err := h.useCases.GetMessagesUseCase(chatID.ID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	return ctx.JSON(http.StatusOK, allMessages)
 }
 
 // SendMessageHandler - Send a user message

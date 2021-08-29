@@ -44,6 +44,14 @@ func (uc *ChatUseCase) CreateChatUseCase(chat models.Chats) (string, error) {
 	return uc.repo.CreateChatRepository(chat)
 }
 
-func (uc *ChatUseCase) GetChatUseCase(userId string) ([]*models.Chats, error) {
-	panic("implement me")
+// GetChatUseCase - Get user chats
+func (uc *ChatUseCase) GetChatUseCase(userID string) ([]*models.Chats, error) {
+	if _, err := uuid.Parse(userID); err != nil {
+		return nil, errors.New("invalid user ID")
+	}
+	allChats, err := uc.repo.GetChatRepository(userID)
+	if err != nil {
+		return nil, err
+	}
+	return allChats, nil
 }

@@ -14,8 +14,15 @@ func NewMessagePg(db *gorm.DB) *MessagePg {
 	return &MessagePg{db: db}
 }
 
-func (pg *MessagePg) GetMessagesRepository(chatId string) ([]*models.Messages, error) {
-	panic("implement me")
+// GetMessagesRepository func Get all chat messages
+func (pg *MessagePg) GetMessagesRepository(chatID string) ([]*models.Messages, error) {
+	var allMessages []*models.Messages
+	messages := pg.db.Table("messages").Where("chat_id = ?", chatID).
+		Order("created_at desc").Scan(&allMessages)
+	if messages.Error != nil {
+		return nil, messages.Error
+	}
+	return allMessages, nil
 }
 
 // SendMessageRepository func send message in chat
