@@ -18,14 +18,14 @@ func NewUserPg(db *gorm.DB) *UserPg {
 // ExistenceUser check username in database
 func (pg *UserPg) ExistenceUser(user *models.Users) error {
 	err := pg.db.Table("users").Where("username = ?", user.Username).
-		Limit(1).Find(&user).Error
+		Limit(1).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return mError.ErrUserAlreadyUsed
+			return nil
 		}
 		return mError.ErrCantCreateUserDB
 	}
-	return err
+	return mError.ErrUserAlreadyUsed
 }
 
 // CreateUserRepository create new user
