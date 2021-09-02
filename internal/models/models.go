@@ -11,24 +11,24 @@ type Response struct {
 }
 
 type Chats struct {
-	ID        uuid.UUID `json:"id,omitempty" gorm:"column:id"`
-	Name      string    `json:"name,omitempty" gorm:"column:name"`
-	Users     []string  `json:"users,omitempty" gorm:"-"`
-	CreatedAt time.Time `json:"created_at,omitempty" gorm:"column:created_at"`
+	ID        uuid.UUID `json:"id" gorm:"column:id"`
+	Name      string    `json:"name" gorm:"column:name"`
+	Users     []string  `json:"users" gorm:"-"`
+	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
 }
 
 type Messages struct {
-	ID        uuid.UUID `json:"id,omitempty" gorm:"type:uuid;default:uuid_generate_v4()"`
-	Chat      string    `json:"chat,omitempty"`
-	Author    string    `json:"author,omitempty"`
-	Text      string    `json:"text,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	ID        uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
+	Chat      string    `json:"chat" gorm:"column:chat_id"`
+	Author    string    `json:"author" gorm:"column:author_id"`
+	Text      string    `json:"text" gorm:"column:text"`
+	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
 }
 
 type Users struct {
-	ID        uuid.UUID `json:"id,omitempty" gorm:"type:uuid;default:uuid_generate_v4()"`
-	Username  string    `json:"author,omitempty" gorm:"column:username"`
-	CreatedAt time.Time `json:"created_at,omitempty" gorm:"column:created_at"`
+	ID        uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
+	Username  string    `json:"author" gorm:"column:username"`
+	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
 }
 
 type Online struct {

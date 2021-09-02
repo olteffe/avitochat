@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/olteffe/avitochat/internal/handlers"
 	"github.com/olteffe/avitochat/internal/repository"
 	"github.com/olteffe/avitochat/internal/usecase"
@@ -55,6 +56,8 @@ func StartServer(quit chan os.Signal, config Config) {
 	handler := handlers.NewHandler(usecases)
 	e := echo.New()
 	handler.Init(e)
+	e.Use(middleware.Logger())
+	//e.Debug = true // TODO remove later
 
 	// Start server
 	go func() {

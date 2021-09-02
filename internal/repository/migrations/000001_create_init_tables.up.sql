@@ -1,5 +1,7 @@
+BEGIN;
+
 -- Add UUID extension. use it if postgres < v13
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Set timezone
 SET TIMEZONE="Europe/Moscow";
@@ -31,3 +33,4 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 CREATE INDEX CONCURRENTLY users_username_index ON users (username);
+END;

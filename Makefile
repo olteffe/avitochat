@@ -2,7 +2,7 @@
 
 APP_NAME = avitochat
 BUILD_DIR = build
-MIGRATIONS_FOLDER = internal/database/migrations
+MIGRATIONS_FOLDER = internal/repository/migrations
 DATABASE_URL = postgres://postgres:password@localhost:5432/postgres?sslmode=disable
 
 clean:

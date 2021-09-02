@@ -7,9 +7,15 @@ import (
 	"github.com/olteffe/avitochat/internal/models"
 )
 
-// user used for input data
+// user used for GetChatHandler
 type user struct {
 	ID string `json:"id"`
+}
+
+// chatInput used for CreateChatHandler
+type chatInput struct {
+	Name  string   `json:"name"`
+	Users []string `json:"users"`
 }
 
 // initChatRoutes - Unites paths
@@ -23,11 +29,22 @@ func (h *Handler) initChatRoutes(api *echo.Group) {
 
 // CreateChatHandler - Create a chat between users
 func (h *Handler) CreateChatHandler(ctx echo.Context) error {
-	var chat models.Chats
-	if err := ctx.Bind(&chat); err != nil {
+	var input chatInput
+	if err := ctx.Bind(&input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
-	chatID, err := h.useCases.CreateChatUseCase(chat)
+	// simple validator for name and users.
+	if input.Name == "" || len(input.Name) > 50 {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid chat name")
+	}
+	if len(input.Users) < 2 {
+		return echo.NewHTTPError(http.StatusBadRequest, "two or more users required")
+	}
+	chat := &models.Chats{
+		Name:  input.Name,
+		Users: input.Users,
+	}
+	chatID, err := h.useCases.Chat.CreateChatUseCase(chat)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

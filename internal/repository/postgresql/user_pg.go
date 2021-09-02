@@ -1,6 +1,8 @@
 package postgresql
 
 import (
+	"errors"
+	mError "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
 	"gorm.io/gorm"
 )
@@ -13,15 +15,25 @@ func NewUserPg(db *gorm.DB) *UserPg {
 	return &UserPg{db: db}
 }
 
-func (pg *UserPg) CreateUserRepository(user *models.Users) (string, error) {
-	createUser := pg.db.Table("users").Where(user.Username).
-		Attrs(user.ID, user.CreatedAt).FirstOrCreate(&user)
-	if createUser.Error != nil {
-		return "", createUser.Error
+// ExistenceUser check username in database
+func (pg *UserPg) ExistenceUser(user *models.Users) error {
+	err := pg.db.Table("users").Where("username = ?", user.Username).
+		Limit(1).Find(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return mError.ErrUserAlreadyUsed
+		}
+		return mError.ErrCantCreateUserDB
 	}
-	return user.ID.String(), nil
+	return err
 }
 
-func (pg *UserPg) ExistenceUserName(userId string) error {
-	panic("implement me")
+// CreateUserRepository create new user
+// It can return wrong error: if another create between ExistenceUser and CreateUserRepository
+func (pg *UserPg) CreateUserRepository(user *models.Users) (string, error) {
+	createUser := pg.db.Table("users").Create(&user)
+	if err := createUser.Error; err != nil {
+		return "", mError.ErrCantCreateUserDB
+	}
+	return user.ID.String(), nil
 }

@@ -10,23 +10,15 @@ import (
 )
 
 type ChatUseCase struct {
-	repo     repository.Chat
-	userRepo repository.User
+	repo repository.Chat
 }
 
-func NewChatUseCase(repo repository.Chat, userRepo repository.User) *ChatUseCase {
-	return &ChatUseCase{repo: repo, userRepo: userRepo}
+func NewChatUseCase(repo repository.Chat) *ChatUseCase {
+	return &ChatUseCase{repo: repo}
 }
 
 // CreateChatUseCase func create new chat
-func (uc *ChatUseCase) CreateChatUseCase(chat models.Chats) (string, error) {
-	// simple validator for name and users.
-	if chat.Name == "" || len(chat.Name) > 50 {
-		return "", errors.New("invalid chat name")
-	}
-	if len(chat.Users) < 2 {
-		return "", errors.New("two or more users required")
-	}
+func (uc *ChatUseCase) CreateChatUseCase(chat *models.Chats) (string, error) {
 	// uniqueness check
 	existChatName, wrongUsers, err := uc.repo.ExistenceChatName(chat)
 	if err != nil {

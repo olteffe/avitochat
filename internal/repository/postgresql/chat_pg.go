@@ -15,7 +15,7 @@ func NewChatPg(db *gorm.DB) *ChatPg {
 }
 
 // CreateChatRepository func create a new chat
-func (pg *ChatPg) CreateChatRepository(chat models.Chats) (string, error) {
+func (pg *ChatPg) CreateChatRepository(chat *models.Chats) (string, error) {
 	// begin transaction
 	tx := pg.db.Begin()
 	defer func() {
@@ -39,7 +39,7 @@ func (pg *ChatPg) CreateChatRepository(chat models.Chats) (string, error) {
 }
 
 // ExistenceChatName func check chat name and users in database
-func (pg *ChatPg) ExistenceChatName(chat models.Chats) (bool, bool, error) {
+func (pg *ChatPg) ExistenceChatName(chat *models.Chats) (bool, bool, error) {
 	rawChat := pg.db.Table("chats").Limit(1).Where("name = ?", chat.Name).Find(&chat)
 	if rawChat.Error != nil && rawChat.Error != gorm.ErrRecordNotFound {
 		return false, false, errors.New("database error")

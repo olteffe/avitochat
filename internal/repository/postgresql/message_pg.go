@@ -26,7 +26,7 @@ func (pg *MessagePg) GetMessagesRepository(chatID string) ([]*models.Messages, e
 }
 
 // SendMessageRepository func send message in chat
-func (pg *MessagePg) SendMessageRepository(message models.Messages) (string, error) {
+func (pg *MessagePg) SendMessageRepository(message *models.Messages) (string, error) {
 	createMessage := pg.db.Table("message").FirstOrCreate(&message)
 	if createMessage.Error != nil {
 		return "", createMessage.Error
@@ -35,7 +35,7 @@ func (pg *MessagePg) SendMessageRepository(message models.Messages) (string, err
 }
 
 // ExistenceChatAuthor func check chatID and authorID in database
-func (pg *MessagePg) ExistenceChatAuthor(message models.Messages) (bool, error) {
+func (pg *MessagePg) ExistenceChatAuthor(message *models.Messages) (bool, error) {
 	chatIdNotExist := pg.db.Table("chats").Limit(1).First(&message.Chat, "id = ?", message.Chat)
 	if chatIdNotExist.Error != nil {
 		if errors.Is(chatIdNotExist.Error, gorm.ErrRecordNotFound) {
