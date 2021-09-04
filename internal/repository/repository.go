@@ -8,7 +8,7 @@ import (
 
 type Chat interface {
 	CreateChatRepository(chat *models.Chats) (string, error)
-	ExistenceChatName(chat *models.Chats) (bool, bool, error)
+	ExistenceChatName(chat *models.Chats) error
 	GetChatRepository(userId string) ([]*models.Chats, error)
 }
 

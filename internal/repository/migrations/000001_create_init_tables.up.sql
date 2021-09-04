@@ -1,7 +1,7 @@
 BEGIN;
 
 -- Add UUID extension. use it if postgres < v13
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Set timezone
 SET TIMEZONE="Europe/Moscow";
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS chats (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE TABLE If NOT EXISTS online (
+CREATE TABLE If NOT EXISTS onlines (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     chat_id UUID REFERENCES chats (id) ON DELETE CASCADE NOT NULL,
     user_id UUID REFERENCES users (id) ON DELETE CASCADE NOT NULL
@@ -32,5 +32,5 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX CONCURRENTLY users_username_index ON users (username);
+-- CREATE INDEX CONCURRENTLY users_username_index ON users (username);
 END;

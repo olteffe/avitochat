@@ -15,13 +15,6 @@ type chat struct {
 	ID string `json:"id"`
 }
 
-// messageInput input data for SendMessageHandler
-type messageInput struct {
-	ChatId   string `json:"chat"`
-	AuthorId string `json:"author"`
-	Text     string `json:"text"`
-}
-
 // initMessageRoutes - Unites paths
 func (h *Handler) initMessageRoutes(api *echo.Group) {
 	messages := api.Group("/messages")
@@ -49,16 +42,13 @@ func (h *Handler) GetMessagesHandler(ctx echo.Context) error {
 
 // SendMessageHandler - Send a user message
 func (h *Handler) SendMessageHandler(ctx echo.Context) error {
-	var input messageInput
+	var input struct {
+		ChatId   string `json:"chat"`
+		AuthorId string `json:"author"`
+		Text     string `json:"text"`
+	}
 	if err := ctx.Bind(&input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-	// simple input validation
-	if _, err := uuid.Parse(input.ChatId); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid chat or author ID")
-	}
-	if _, err := uuid.Parse(input.AuthorId); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid chat or author ID")
 	}
 	message := &models.Messages{
 		Chat:   input.ChatId,

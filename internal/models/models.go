@@ -31,7 +31,7 @@ type Users struct {
 	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
 }
 
-type Online struct {
+type Onlines struct {
 	ID     uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	ChatID uuid.UUID `gorm:"column:chat_id"`
 	UserID uuid.UUID `gorm:"column:user_id"`

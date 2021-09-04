@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	mError "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
 	"github.com/olteffe/avitochat/internal/repository"
 )
@@ -19,16 +20,17 @@ func NewChatUseCase(repo repository.Chat) *ChatUseCase {
 
 // CreateChatUseCase func create new chat
 func (uc *ChatUseCase) CreateChatUseCase(chat *models.Chats) (string, error) {
+	// simple validator for name and users.
+	if chat.Name == "" || len(chat.Name) > 50 {
+		return "", mError.ErrChatInvalid
+	}
+	if len(chat.Users) < 2 {
+		return "", mError.ErrCountUsers
+	}
 	// uniqueness check
-	existChatName, wrongUsers, err := uc.repo.ExistenceChatName(chat)
+	err := uc.repo.ExistenceChatName(chat)
 	if err != nil {
-		return "", errors.New("cannot validate chat name and users. database error")
-	}
-	if existChatName {
-		return "", errors.New("a chat already exists")
-	}
-	if wrongUsers {
-		return "", errors.New("one or more users do not exist")
+		return "", err
 	}
 	// generate default values
 	chat.ID = uuid.New()

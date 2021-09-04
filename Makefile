@@ -59,3 +59,6 @@ docker.postgres:
 		-v ${HOME}/dev-postgres/data/:/var/lib/postgresql/data \
 		-p 5432:5432 \
 		postgres:13.3-alpine
+
+psql:
+	docker exec -it avitochat-postgres psql -U postgres -d postgres

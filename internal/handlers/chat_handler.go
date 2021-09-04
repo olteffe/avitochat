@@ -12,12 +12,6 @@ type user struct {
 	ID string `json:"id"`
 }
 
-// chatInput used for CreateChatHandler
-type chatInput struct {
-	Name  string   `json:"name"`
-	Users []string `json:"users"`
-}
-
 // initChatRoutes - Unites paths
 func (h *Handler) initChatRoutes(api *echo.Group) {
 	chats := api.Group("/chats")
@@ -29,16 +23,12 @@ func (h *Handler) initChatRoutes(api *echo.Group) {
 
 // CreateChatHandler - Create a chat between users
 func (h *Handler) CreateChatHandler(ctx echo.Context) error {
-	var input chatInput
+	var input struct {
+		Name  string   `json:"name"`
+		Users []string `json:"users"`
+	}
 	if err := ctx.Bind(&input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-	// simple validator for name and users.
-	if input.Name == "" || len(input.Name) > 50 {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid chat name")
-	}
-	if len(input.Users) < 2 {
-		return echo.NewHTTPError(http.StatusBadRequest, "two or more users required")
 	}
 	chat := &models.Chats{
 		Name:  input.Name,

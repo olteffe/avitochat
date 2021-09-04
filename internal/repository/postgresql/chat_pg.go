@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"errors"
+	mError "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
 	"gorm.io/gorm"
 )
@@ -32,29 +33,29 @@ func (pg *ChatPg) CreateChatRepository(chat *models.Chats) (string, error) {
 		return "", createChat.Error
 	}
 	for _, userID := range chat.Users {
-		tx.Exec("INSERT INTO online (chat_id, user_id) VALUES (?, ?)", chat.ID, userID)
+		tx.Exec("INSERT INTO onlines (chat_id, user_id) VALUES (?, ?)", chat.ID, userID)
 	}
 	return chat.ID.String(), tx.Commit().Error
 	// end transaction if return (id, err == nil)
 }
 
 // ExistenceChatName func check chat name and users in database
-func (pg *ChatPg) ExistenceChatName(chat *models.Chats) (bool, bool, error) {
-	rawChat := pg.db.Table("chats").Limit(1).Where("name = ?", chat.Name).Find(&chat)
-	if rawChat.Error != nil && rawChat.Error != gorm.ErrRecordNotFound {
-		return false, false, errors.New("database error")
+func (pg *ChatPg) ExistenceChatName(chat *models.Chats) error {
+	rawChat := pg.db.Table("chats").Limit(1).Where("name = ?", chat.Name).First(&chat)
+	if err := rawChat.Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return mError.ErrDB
 	}
 	if countChat := rawChat.RowsAffected; countChat != 0 {
-		return true, false, nil
+		return mError.ErrChatInvalid
 	}
 	rawUsers := pg.db.Table("users").Select("id").Find(&chat, chat.Users)
-	if rawUsers.Error != nil && rawUsers.Error != gorm.ErrRecordNotFound {
-		return false, false, errors.New("database error")
+	if rawUsers.Error != nil && !errors.Is(rawUsers.Error, gorm.ErrRecordNotFound) {
+		return mError.ErrDB
 	}
 	if countUsers := rawUsers.RowsAffected; countUsers != int64(len(chat.Users)) {
-		return false, true, nil
+		return mError.ErrUserInvalid
 	}
-	return false, false, nil
+	return nil
 }
 
 // GetChatRepository - Get user chats

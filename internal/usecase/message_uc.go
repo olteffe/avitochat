@@ -32,6 +32,13 @@ func (uc *MessageUseCase) GetMessagesUseCase(chatID string) ([]*models.Messages,
 
 // SendMessageUseCase func send new message
 func (uc *MessageUseCase) SendMessageUseCase(message *models.Messages) (string, error) {
+	// simple input validation
+	if _, err := uuid.Parse(message.Chat); err != nil {
+		return "invalid chat or author ID", err
+	}
+	if _, err := uuid.Parse(message.Author); err != nil {
+		return "invalid chat or author ID", err
+	}
 	// db validation
 	chatAuthorNotExist, err := uc.repo.ExistenceChatAuthor(message)
 	if err != nil {
