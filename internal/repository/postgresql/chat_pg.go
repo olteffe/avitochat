@@ -25,12 +25,12 @@ func (pg *ChatPg) CreateChatRepository(chat *models.Chats) (string, error) {
 		}
 	}()
 	if err := tx.Error; err != nil {
-		return "", err
+		return "", mError.ErrDB
 	}
 	createChat := tx.Table("chats").Omit("Users").Create(&chat)
 	if createChat.Error != nil {
 		tx.Rollback()
-		return "", createChat.Error
+		return "", mError.ErrDB
 	}
 	for _, userID := range chat.Users {
 		tx.Exec("INSERT INTO onlines (chat_id, user_id) VALUES (?, ?)", chat.ID, userID)
@@ -48,7 +48,8 @@ func (pg *ChatPg) ExistenceChatName(chat *models.Chats) error {
 	if countChat := rawChat.RowsAffected; countChat != 0 {
 		return mError.ErrChatInvalid
 	}
-	rawUsers := pg.db.Table("users").Select("id").Find(&chat, chat.Users)
+	var lenSliceID []models.Users
+	rawUsers := pg.db.Table("users").Select("id").Where(chat.Users).Find(&lenSliceID)
 	if rawUsers.Error != nil && !errors.Is(rawUsers.Error, gorm.ErrRecordNotFound) {
 		return mError.ErrDB
 	}

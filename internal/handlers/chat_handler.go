@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"errors"
+	mError "github.com/olteffe/avitochat/internal/message_error"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -36,6 +38,12 @@ func (h *Handler) CreateChatHandler(ctx echo.Context) error {
 	}
 	chatID, err := h.useCases.Chat.CreateChatUseCase(chat)
 	if err != nil {
+		if errors.Is(err, mError.ErrUserInvalid) || errors.Is(err, mError.ErrChatInvalid) || errors.Is(err, mError.ErrCountUsers) {
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad Request")
+		}
+		if errors.Is(err, mError.ErrDB) {
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	return ctx.JSON(http.StatusCreated, struct {

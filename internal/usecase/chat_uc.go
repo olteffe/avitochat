@@ -27,6 +27,12 @@ func (uc *ChatUseCase) CreateChatUseCase(chat *models.Chats) (string, error) {
 	if len(chat.Users) < 2 {
 		return "", mError.ErrCountUsers
 	}
+	// and additionally injection protect in func ExistenceChatName
+	for _, id := range chat.Users {
+		if _, err := uuid.Parse(id); err != nil {
+			return "", mError.ErrUserInvalid
+		}
+	}
 	// uniqueness check
 	err := uc.repo.ExistenceChatName(chat)
 	if err != nil {
