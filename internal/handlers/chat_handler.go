@@ -59,7 +59,7 @@ func (h *Handler) GetChatHandler(ctx echo.Context) error {
 	if err := ctx.Bind(&userID); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid user ID")
 	}
-	allChats, err := h.useCases.GetChatUseCase(userID.ID)
+	allChats, err := h.useCases.Chat.GetChatUseCase(userID.ID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

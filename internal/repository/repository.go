@@ -18,8 +18,9 @@ type User interface {
 }
 
 type Message interface {
-	GetMessagesRepository(chatID string) ([]*models.Messages, error)
-	ExistenceChatAuthor(chat *models.Messages) (bool, error)
+	GetMessagesRepository(message *models.Messages) ([]*models.Messages, error)
+	ExistenceChat(message *models.Messages) error
+	ExistenceAuthor(message *models.Messages) error
 	SendMessageRepository(message *models.Messages) (string, error)
 }
 

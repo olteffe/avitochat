@@ -9,4 +9,7 @@ var (
 	ErrUserInvalid      = errors.New("user is invalid")
 	ErrChatInvalid      = errors.New("chat name is invalid")
 	ErrCountUsers       = errors.New("two or more users required")
+	ErrChatIdInvalid    = errors.New("invalid chat ID")
+	ErrUserIdInvalid    = errors.New("invalid user ID")
+	ErrUserOrChat       = errors.New("user or chat is invalid")
 )

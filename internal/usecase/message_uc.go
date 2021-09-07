@@ -1,29 +1,29 @@
 package usecase
 
 import (
-	"errors"
 	"github.com/google/uuid"
+	mErr "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
 	"github.com/olteffe/avitochat/internal/repository"
 	"time"
 )
 
 type MessageUseCase struct {
-	repo     repository.Message
-	userRepo repository.User
-	chatRepo repository.Chat
+	repo repository.Message
 }
 
-func NewMessageUseCase(repo repository.Message, userRepo repository.User, chatRepo repository.Chat) *MessageUseCase {
+func NewMessageUseCase(repo repository.Message) *MessageUseCase {
 	return &MessageUseCase{
-		repo:     repo,
-		userRepo: userRepo,
-		chatRepo: chatRepo,
+		repo: repo,
 	}
 }
 
-func (uc *MessageUseCase) GetMessagesUseCase(chatID string) ([]*models.Messages, error) {
-	allMessages, err := uc.repo.GetMessagesRepository(chatID)
+func (uc *MessageUseCase) GetMessagesUseCase(message *models.Messages) ([]*models.Messages, error) {
+	// db validation
+	if err := uc.repo.ExistenceChat(message); err != nil {
+		return nil, err
+	}
+	allMessages, err := uc.repo.GetMessagesRepository(message)
 	if err != nil {
 		return nil, err
 	}
@@ -34,18 +34,17 @@ func (uc *MessageUseCase) GetMessagesUseCase(chatID string) ([]*models.Messages,
 func (uc *MessageUseCase) SendMessageUseCase(message *models.Messages) (string, error) {
 	// simple input validation
 	if _, err := uuid.Parse(message.Chat); err != nil {
-		return "invalid chat or author ID", err
+		return "", mErr.ErrChatIdInvalid
 	}
 	if _, err := uuid.Parse(message.Author); err != nil {
-		return "invalid chat or author ID", err
+		return "", mErr.ErrUserIdInvalid
 	}
 	// db validation
-	chatAuthorNotExist, err := uc.repo.ExistenceChatAuthor(message)
-	if err != nil {
-		return "", errors.New("database error")
+	if err := uc.repo.ExistenceChat(message); err != nil {
+		return "", err
 	}
-	if chatAuthorNotExist {
-		return "", errors.New("chat or author not exist")
+	if err := uc.repo.ExistenceAuthor(message); err != nil {
+		return "", err
 	}
 	message.ID = uuid.New()
 	message.CreatedAt = time.Now()
