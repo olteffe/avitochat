@@ -6,17 +6,20 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockery --dir . --name Chat --output ./mocks
 type Chat interface {
 	CreateChatRepository(chat *models.Chats) (string, error)
 	ExistenceChatName(chat *models.Chats) error
 	GetChatRepository(userId string) ([]*models.Chats, error)
 }
 
+//go:generate mockery --dir . --name User --output ./mocks
 type User interface {
 	CreateUserRepository(user *models.Users) (string, error)
 	ExistenceUser(user *models.Users) error
 }
 
+//go:generate mockery --dir . --name Message --output ./mocks
 type Message interface {
 	GetMessagesRepository(message *models.Messages) ([]*models.Messages, error)
 	ExistenceChat(message *models.Messages) error

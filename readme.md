@@ -23,13 +23,15 @@
 * [Echo](https://github.com/labstack/echo) - web framework.
 * [Gorm](https://github.com/go-gorm/gorm) - ORM для Golang.
 * [Google/uuid](https://github.com/google/uuid) - генерирует и проверяет UUID на основе RFC4122 и DCE 1.1.
-* [Gomock](https://github.com/golang/mock/) - mocking framework.
+* [Mockery](https://github.com/vektra/mockery) - генератор кода для имитации интерфейсов Golang.
 * [Testify](https://github.com/stretchr/testify/) - framework для написания тестов на Golang.
 
 Документация
 --------------
 
 Документация представлена в виде OpenAPI [спецификации](https://github.com/olteffe/avitochat/blob/master/api/openapi.yaml).
+
+![db here](https://github.com/olteffe/avitochat/blob/master/assets/oapi.png)
 
 ER-диаграмма
 --------------
