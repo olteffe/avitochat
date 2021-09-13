@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"errors"
+	"fmt"
 	mError "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
 	"gorm.io/gorm"
@@ -25,12 +26,12 @@ func (pg *ChatPg) CreateChatRepository(chat *models.Chats) (string, error) {
 		}
 	}()
 	if err := tx.Error; err != nil {
-		return "", mError.ErrDB
+		return "", fmt.Errorf("CreateChatRepository: %w", mError.ErrDB)
 	}
 	createChat := tx.Table("chats").Omit("Users").Create(&chat)
 	if createChat.Error != nil {
 		tx.Rollback()
-		return "", mError.ErrDB
+		return "", fmt.Errorf("CreateChatRepository: %w", mError.ErrDB)
 	}
 	for _, userID := range chat.Users {
 		tx.Exec("INSERT INTO onlines (chat_id, user_id) VALUES (?, ?)", chat.ID, userID)
@@ -43,18 +44,18 @@ func (pg *ChatPg) CreateChatRepository(chat *models.Chats) (string, error) {
 func (pg *ChatPg) ExistenceChatName(chat *models.Chats) error {
 	rawChat := pg.db.Table("chats").Limit(1).Where("name = ?", chat.Name).First(&chat)
 	if err := rawChat.Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return mError.ErrDB
+		return fmt.Errorf("ExistenceChatName: %w", mError.ErrDB)
 	}
 	if countChat := rawChat.RowsAffected; countChat != 0 {
-		return mError.ErrChatInvalid
+		return fmt.Errorf("ExistenceChatName: %w", mError.ErrChatInvalid)
 	}
 	var lenSliceID []models.Users
 	rawUsers := pg.db.Table("users").Select("id").Where(chat.Users).Find(&lenSliceID)
 	if rawUsers.Error != nil && !errors.Is(rawUsers.Error, gorm.ErrRecordNotFound) {
-		return mError.ErrDB
+		return fmt.Errorf("ExistenceChatName: %w", mError.ErrDB)
 	}
 	if countUsers := rawUsers.RowsAffected; countUsers != int64(len(chat.Users)) {
-		return mError.ErrUserInvalid
+		return fmt.Errorf("ExistenceChatName: %w", mError.ErrUserInvalid)
 	}
 	return nil
 }
@@ -65,7 +66,7 @@ func (pg *ChatPg) GetChatRepository(userID string) ([]*models.Chats, error) {
 	chats := pg.db.Table("chats").Where("user_id = ?", userID).
 		Order("created_at desc").Scan(&allChats)
 	if chats.Error != nil {
-		return nil, chats.Error
+		return nil, fmt.Errorf("GetChatRepository: %w", chats.Error)
 	}
 	return allChats, nil
 }

@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,21 +22,21 @@ func NewChatUseCase(repo repository.Chat) *ChatUseCase {
 func (uc *ChatUseCase) CreateChatUseCase(chat *models.Chats) (string, error) {
 	// simple validator for name and users.
 	if chat.Name == "" || len(chat.Name) > 50 {
-		return "", mError.ErrChatInvalid
+		return "", fmt.Errorf("CreateChatUseCase: %w", mError.ErrChatInvalid)
 	}
 	if len(chat.Users) < 2 {
-		return "", mError.ErrCountUsers
+		return "", fmt.Errorf("CreateChatUseCase: %w", mError.ErrCountUsers)
 	}
 	// and additionally injection protect in func ExistenceChatName
 	for _, id := range chat.Users {
 		if _, err := uuid.Parse(id); err != nil {
-			return "", mError.ErrUserInvalid
+			return "", fmt.Errorf("CreateChatUseCase: %w", mError.ErrUserInvalid)
 		}
 	}
 	// uniqueness check
 	err := uc.repo.ExistenceChatName(chat)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("ExistenceChatName: %w", err)
 	}
 	// generate default values
 	chat.ID = uuid.New()
@@ -47,11 +47,11 @@ func (uc *ChatUseCase) CreateChatUseCase(chat *models.Chats) (string, error) {
 // GetChatUseCase - Get user chats
 func (uc *ChatUseCase) GetChatUseCase(userID string) ([]*models.Chats, error) {
 	if _, err := uuid.Parse(userID); err != nil {
-		return nil, errors.New("invalid user ID")
+		return nil, fmt.Errorf("GetChatUseCase: %w", mError.ErrUserIdInvalid)
 	}
 	allChats, err := uc.repo.GetChatRepository(userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetChatUseCase: %w", err)
 	}
 	return allChats, nil
 }

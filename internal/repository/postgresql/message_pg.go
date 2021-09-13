@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"errors"
+	"fmt"
 	mErr "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
 	"gorm.io/gorm"
@@ -21,7 +22,7 @@ func (pg *MessagePg) GetMessagesRepository(message *models.Messages) ([]*models.
 	messages := pg.db.Table("messages").Where("chat_id = ?", message.Chat).
 		Order("created_at desc").Scan(&allMessages)
 	if messages.Error != nil {
-		return nil, mErr.ErrDB
+		return nil, fmt.Errorf("GetMessagesRepository: %w", mErr.ErrDB)
 	}
 	return allMessages, nil
 }
@@ -30,7 +31,7 @@ func (pg *MessagePg) GetMessagesRepository(message *models.Messages) ([]*models.
 func (pg *MessagePg) SendMessageRepository(message *models.Messages) (string, error) {
 	createMessage := pg.db.Table("messages").FirstOrCreate(&message)
 	if createMessage.Error != nil {
-		return "", mErr.ErrDB
+		return "", fmt.Errorf("SendMessageRepository: %w", mErr.ErrDB)
 	}
 	return message.ID.String(), nil
 }
@@ -41,9 +42,9 @@ func (pg *MessagePg) ExistenceChat(message *models.Messages) error {
 	chatIdNotExist := pg.db.Table("chats").Where("id = ?", message.Chat).Limit(1).First(&tempChat)
 	if chatIdNotExist.Error != nil {
 		if errors.Is(chatIdNotExist.Error, gorm.ErrRecordNotFound) {
-			return mErr.ErrChatIdInvalid
+			return fmt.Errorf("ExistenceChat: %w", mErr.ErrChatIdInvalid)
 		}
-		return mErr.ErrDB
+		return fmt.Errorf("ExistenceChat: %w", mErr.ErrDB)
 	}
 	return nil
 }
@@ -54,9 +55,9 @@ func (pg *MessagePg) ExistenceAuthor(message *models.Messages) error {
 	authorIDExist := pg.db.Table("users").Where("id = ?", message.Author).Limit(1).First(&tempUser)
 	if authorIDExist.Error != nil {
 		if errors.Is(authorIDExist.Error, gorm.ErrRecordNotFound) {
-			return mErr.ErrUserIdInvalid
+			return fmt.Errorf("ExistenceAuthor: %w", mErr.ErrUserIdInvalid)
 		}
-		return mErr.ErrDB
+		return fmt.Errorf("ExistenceAuthor: %w", mErr.ErrDB)
 	}
 	return nil
 }

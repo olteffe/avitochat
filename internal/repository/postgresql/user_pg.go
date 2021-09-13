@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"errors"
+	"fmt"
 	mError "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
 	"gorm.io/gorm"
@@ -23,9 +24,9 @@ func (pg *UserPg) ExistenceUser(user *models.Users) error {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil
 		}
-		return mError.ErrCantCreateUserDB
+		return fmt.Errorf("ExistenceUser: %w", mError.ErrCantCreateUserDB)
 	}
-	return mError.ErrUserAlreadyUsed
+	return fmt.Errorf("ExistenceUser: %w", mError.ErrUserAlreadyUsed)
 }
 
 // CreateUserRepository create new user
@@ -33,7 +34,7 @@ func (pg *UserPg) ExistenceUser(user *models.Users) error {
 func (pg *UserPg) CreateUserRepository(user *models.Users) (string, error) {
 	createUser := pg.db.Table("users").Create(&user)
 	if err := createUser.Error; err != nil {
-		return "", mError.ErrCantCreateUserDB
+		return "", fmt.Errorf("CreateUserRepository: %w", mError.ErrCantCreateUserDB)
 	}
 	return user.ID.String(), nil
 }
