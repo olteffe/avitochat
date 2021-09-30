@@ -47,7 +47,11 @@ func (uc *ChatUseCase) CreateChatUseCase(chat *models.Chats) (string, error) {
 // GetChatUseCase - Get user chats
 func (uc *ChatUseCase) GetChatUseCase(userID string) ([]*models.Chats, error) {
 	if _, err := uuid.Parse(userID); err != nil {
-		return nil, fmt.Errorf("GetChatUseCase: %w", mError.ErrUserIdInvalid)
+		return nil, fmt.Errorf("GetChatUseCase: Parse: %w", mError.ErrUserInvalid)
+	}
+	err := uc.repo.ExistenceUser(userID)
+	if err != nil {
+		return nil, fmt.Errorf("ExistenceUser: %w", err)
 	}
 	allChats, err := uc.repo.GetChatRepository(userID)
 	if err != nil {

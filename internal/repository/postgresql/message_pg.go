@@ -42,7 +42,7 @@ func (pg *MessagePg) ExistenceChat(message *models.Messages) error {
 	chatIdNotExist := pg.db.Table("chats").Where("id = ?", message.Chat).Limit(1).First(&tempChat)
 	if chatIdNotExist.Error != nil {
 		if errors.Is(chatIdNotExist.Error, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("ExistenceChat: %w", mErr.ErrChatIdInvalid)
+			return fmt.Errorf("ExistenceChat: %w", mErr.ErrUserOrChat)
 		}
 		return fmt.Errorf("ExistenceChat: %w", mErr.ErrDB)
 	}
@@ -55,7 +55,7 @@ func (pg *MessagePg) ExistenceAuthor(message *models.Messages) error {
 	authorIDExist := pg.db.Table("users").Where("id = ?", message.Author).Limit(1).First(&tempUser)
 	if authorIDExist.Error != nil {
 		if errors.Is(authorIDExist.Error, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("ExistenceAuthor: %w", mErr.ErrUserIdInvalid)
+			return fmt.Errorf("ExistenceAuthor: %w", mErr.ErrUserOrChat)
 		}
 		return fmt.Errorf("ExistenceAuthor: %w", mErr.ErrDB)
 	}

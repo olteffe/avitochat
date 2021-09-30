@@ -60,13 +60,25 @@ func (pg *ChatPg) ExistenceChatName(chat *models.Chats) error {
 	return nil
 }
 
+func (pg *ChatPg) ExistenceUser(userId string) error {
+	var tempUser models.Users
+	userIDExist := pg.db.Table("users").Where("id = ?", userId).Limit(1).First(&tempUser)
+	if userIDExist.Error != nil {
+		if errors.Is(userIDExist.Error, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("ExistenceUser: %w", mError.ErrUserIdInvalid)
+		}
+		return fmt.Errorf("ExistenceUser: %w", mError.ErrDB)
+	}
+	return nil
+}
+
 // GetChatRepository - Get user chats
 func (pg *ChatPg) GetChatRepository(userID string) ([]*models.Chats, error) {
 	var allChats []*models.Chats
 	chats := pg.db.Table("chats").Where("user_id = ?", userID).
 		Order("created_at desc").Scan(&allChats)
 	if chats.Error != nil {
-		return nil, fmt.Errorf("GetChatRepository: %w", chats.Error)
+		return nil, fmt.Errorf("GetChatRepository: %w", mError.ErrDB)
 	}
 	return allChats, nil
 }

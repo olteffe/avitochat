@@ -1,0 +1,345 @@
+// attention! if running all tests in manual mode, make sure the database is prepared:
+// $> make migrate.down
+// $> make migrate.up
+// Test 1. Create new user(valid username)
+POST http://{{host}}/users/add
+Content-Type: application/json
+
+{
+  "username": "user_1"
+}
+> {% client.global.clearAll()// reset all global variables
+    client.test("Test #1. Request executed successfully", function() {
+    client.assert(response.status === 201, "Response status is not 201");
+    });
+    client.global.set("user_1_ID", response.body["id"]);// set global variable {{user_1_ID}}
+    client.log("user_1_ID saved: id=" + client.global.get("user_1_ID"));
+    client.test("Test #1. Response content-type is json", function() {
+        var type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+%}
+###
+// Test 2. Create new user(valid username) for test#TODO
+POST http://{{host}}/users/add
+Content-Type: application/json
+
+{
+  "username": "user_2"
+}
+> {%
+    client.test("Test #2. Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+    });
+    client.global.set("user_2_ID", response.body["id"]);// set global variable {{user_2_ID}}
+    client.log("user_2_ID saved: id=" + client.global.get("user_2_ID"));
+%}
+###
+// Test 3. Create new user(invalid username-allredy used)
+POST http://{{host}}/users/add
+Content-Type: application/json
+
+{
+  "username": "user_1"
+}
+> {% client.test("Test #3. Username already used", function() {
+        client.assert(response.status === 409, "Response status is not 409");
+        client.assert(response.body["message"] === "Username already used", "Response body is invalid")
+    });
+%}
+###
+// Test 4. Create new user(invalid username-nill username)
+POST http://{{host}}/users/add
+Content-Type: application/json
+
+{
+  "username": ""
+}
+> {% client.test("Test #4. Invalid username", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body["message"] === "Bad request", "Response body is invalid")
+    });
+%}
+###
+// Test 5. Create new user(bad request)
+POST http://{{host}}/users/add
+Content-Type: application/json
+
+{
+  "chat": "user_1"
+}
+> {% client.test("Test #5. Invalid input data", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body["message"] === "Bad request", "Response body is invalid")
+    });
+%}
+###
+// Test 6. Create new chat(valid). Get uuid from test #1 and #2
+POST http://{{host}}/chats/add
+Content-Type: application/json
+
+{
+  "name": "chat_1",
+  "users": ["{{user_1_ID}}", "{{user_2_ID}}"]
+}
+> {% client.test("Test #6. Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.global.set("chat_1_ID", response.body["id"]);
+    });
+    client.log("chat_1_ID saved. id=" + client.global.get("chat_1_ID"));// set global variable {{chat_1_ID}}
+    client.test("Test #6. Response content-type is json", function() {
+        var type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+%}
+###
+// Test 7. Create new chat(valid). Get uuid from test #1 and #2. It used in test #19
+POST http://{{host}}/chats/add
+Content-Type: application/json
+
+{
+  "name": "chat_2",
+  "users": ["{{user_1_ID}}", "{{user_2_ID}}"]
+}
+> {% client.test("Test #7. Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.global.set("chat_2_ID", response.body["id"]);
+    });
+    client.log("chat_2_ID saved. id=" + client.global.get("chat_2_ID"));// set global variable {{chat_2_ID}}
+    client.test("Test #7. Response content-type is json", function() {
+        var type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+%}
+###
+// Test 8. Create new chat(invalid userID. {{$uuid}} is randomly generated).
+POST http://{{host}}/chats/add
+Content-Type: application/json
+
+{
+  "name": "chat_3",
+  "users": ["{{$uuid}}", "drop table users"]
+}
+> {% client.test("Test #8. Invalid user ID", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body["message"] === "Bad request", "Response body is invalid");
+    });
+%}
+###
+// Test 9. Create new chat(chat name=nill). Get uuid from test #1 and #2
+POST http://{{host}}/chats/add
+Content-Type: application/json
+
+{
+  "name": "",
+  "users": ["{{user_1_ID}}", "{{user_2_ID}}"]
+}
+> {% client.test("Test #9. Invalid chat name", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body["message"] === "Bad request", "Response body is invalid");
+    });
+%}
+###
+// Test 10. Create new chat(count of users is invalid). Get uuid from test 1.0 and 1.1 or read from db
+POST http://{{host}}/chats/add
+Content-Type: application/json
+
+{
+  "name": "chat_4",
+  "users": ["{{user_1_ID}}"]
+}
+> {% client.test("Test #10. Count of users is invalid", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body["message"] === "Bad request", "Response body is invalid");
+    });
+%}
+###
+// Test 11. Add new message(valid). Get uuid from test #1 and #6
+POST http://{{host}}/messages/add
+Content-Type: application/json
+
+{
+  "chat": "{{chat_1_ID}}",
+  "author": "{{user_1_ID}}",
+  "text": "chat_message_1_from_user_1"
+}
+> {% client.test("Test #11. Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.global.set("message_1_ID", response.body["id"]);
+    });
+    client.test("Response content-type is json", function() {
+	    var type = response.contentType.mimeType;
+	    client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+	});
+%}
+###
+// Test 12. Add new message(valid). Get uuid from test #2 and #6. It use in test #15
+POST http://{{host}}/messages/add
+Content-Type: application/json
+
+{
+  "chat": "{{chat_1_ID}}",
+  "author": "{{user_2_ID}}",
+  "text": "chat_message_2_from_user_2"
+}
+> {% client.test("Test #12. Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.global.set("message_2_ID", response.body["id"]);
+    });
+    client.test("Response content-type is json", function() {
+	    var type = response.contentType.mimeType;
+	    client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+	});
+%}
+###
+// Test 13. Add new message(chat ID not in db). Get author id from test #1 and generate random chat ID
+POST http://{{host}}/messages/add
+Content-Type: application/json
+
+{
+  "chat": "{{$uuid}}",
+  "author": "{{user_1_ID}}",
+  "text": "chat_message_3"
+}
+> {% client.test("Test #13. Chat ID is invalid", function() {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+    client.test("Test #13. Response body is valid", function() {
+        client.assert(response.body["message"] === "User or chat not found", "Response body is not 'User or chat not found'");
+    });
+%}
+###
+// Test 14. Add new message(author ID not in db). Get chat id from test #6 and generate random author ID
+POST http://{{host}}/messages/add
+Content-Type: application/json
+
+{
+  "chat": "{{chat_1_ID}}",
+  "author": "{{$uuid}}",
+  "text": "chat_message_4"
+}
+> {% client.test("Test #14. Author ID is invalid", function() {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+    client.test("Test #14. Response body is valid", function() {
+        client.assert(response.body["message"] === "User or chat not found", "Response body is not 'User or chat not found'");
+    });
+%}
+###
+// Test 15. Add new message(input data is invalid). Generate random author ID
+POST http://{{host}}/messages/add
+Content-Type: application/json
+
+{
+  "chat": "select * from users",
+  "author": "{{$uuid}}",
+  "text": "chat_message_5"
+}
+> {% client.test("Test #15. Input data is invalid", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+    client.test("Test #15. Response body is valid", function() {
+        client.assert(response.body["message"] === "Bad request", "Response body is not 'Bad request'");
+    });
+%}
+###
+// Test 16. Get messages(valid). Get chat id from test #6
+POST http://{{host}}/messages/get
+Content-Type: application/json
+
+{
+  "chat": "{{chat_1_ID}}"
+}
+> {% client.test("Test #16. Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Test #16. Response content-type is json", function() {
+        var type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+    client.test("Test #16. Response body is valid", function() {
+        client.assert(response.body[0]["text"] === "chat_message_2_from_user_2", "Response body is not valid");
+        client.assert(response.body[1]["text"] === "chat_message_1_from_user_1", "Response body is not valid");
+    });
+%}
+###
+// Test 17. Get messages(id not in database)
+POST http://{{host}}/messages/get
+Content-Type: application/json
+
+{
+  "chat": "{{$uuid}}"
+}
+> {% client.test("Test #17. Chat id is invalid", function() {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+    client.test("Test #17. Response body is invalid", function() {
+        client.assert(response.body["message"] === "Chat not found", "Response body is not 'Chat not found'");
+    });
+%}
+###
+// Test 18. Get messages(invalid input data)
+POST http://{{host}}/messages/get
+Content-Type: application/json
+
+{
+  "chat_": ""
+}
+> {% client.test("Test #18. Chat id is invalid", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+    client.test("Test #18. Response body is invalid", function() {
+        client.assert(response.body["message"] === "Bad request", "Response body is not 'Bad request'");
+    });
+%}
+###
+// Test 19. Get user chats(valid)
+POST http://{{host}}/chats/get
+Content-Type: application/json
+
+{
+  "user": "{{user_1_ID}}"
+}
+> {% client.test("Test #19. Status code is valid", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Test #19. Response content-type is json", function() {
+        var type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+    client.test("Test #19. Response body is valid", function() {
+        client.assert(response.body[0]["id"] === "{{chat_2_ID}}", "Response body is not valid");
+        client.assert(response.body[1]["id"] === "{{chat_1_ID}}", "Response body is not valid");
+    });
+%}
+###
+// Test 20. Get user chats(input data is invalid)
+POST http://{{host}}/chats/get
+Content-Type: application/json
+
+{
+  "user1": ""
+}
+> {% client.test("Test #20. Status code is invalid", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+    client.test("Test #20. Response body is invalid", function() {
+        client.assert(response.body["message"] === "Bad request", "Response body is not 'Bad request'");
+    });
+%}
+###
+// Test 21. Get user chats(user ID not found in database)
+POST http://{{host}}/chats/get
+Content-Type: application/json
+
+{
+  "user": "{{$uuid}}"
+}
+> {% client.test("Test #21. User id is invalid", function() {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+    client.test("Test #21. Response body is invalid", function() {
+        client.assert(response.body["message"] === "User not found", "Response body is not 'User not found'");
+    });
+%}
+###

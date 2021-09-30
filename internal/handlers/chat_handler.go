@@ -30,7 +30,7 @@ func (h *Handler) CreateChatHandler(ctx echo.Context) error {
 		Users []string `json:"users"`
 	}
 	if err := ctx.Bind(&input); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 	chat := &models.Chats{
 		Name:  input.Name,
@@ -38,13 +38,18 @@ func (h *Handler) CreateChatHandler(ctx echo.Context) error {
 	}
 	chatID, err := h.useCases.Chat.CreateChatUseCase(chat)
 	if err != nil {
-		if errors.Is(err, mError.ErrUserInvalid) || errors.Is(err, mError.ErrChatInvalid) || errors.Is(err, mError.ErrCountUsers) {
-			return echo.NewHTTPError(http.StatusBadRequest, "Bad Request")
+		switch {
+		case errors.Is(err, mError.ErrUserInvalid):
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		case errors.Is(err, mError.ErrChatInvalid):
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		case errors.Is(err, mError.ErrCountUsers):
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		case errors.Is(err, mError.ErrDB):
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
-		if errors.Is(err, mError.ErrDB) {
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
-		}
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	return ctx.JSON(http.StatusCreated, struct {
 		Id string `json:"id"`
@@ -57,11 +62,20 @@ func (h *Handler) CreateChatHandler(ctx echo.Context) error {
 func (h *Handler) GetChatHandler(ctx echo.Context) error {
 	var userID user
 	if err := ctx.Bind(&userID); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid user ID")
+		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 	allChats, err := h.useCases.Chat.GetChatUseCase(userID.ID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		switch {
+		case errors.Is(err, mError.ErrUserInvalid):
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		case errors.Is(err, mError.ErrUserIdInvalid):
+			return echo.NewHTTPError(http.StatusNotFound, "User not found")
+		case errors.Is(err, mError.ErrDB):
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
 	}
 	return ctx.JSON(http.StatusOK, allChats)
 }

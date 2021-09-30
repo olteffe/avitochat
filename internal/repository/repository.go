@@ -11,6 +11,7 @@ type Chat interface {
 	CreateChatRepository(chat *models.Chats) (string, error)
 	ExistenceChatName(chat *models.Chats) error
 	GetChatRepository(userId string) ([]*models.Chats, error)
+	ExistenceUser(userId string) error
 }
 
 //go:generate mockery --dir . --name User --output ./mocks

@@ -21,20 +21,21 @@ func (h *Handler) CreateUserHandler(ctx echo.Context) error {
 		Username string `json:"username"`
 	}
 	if err := ctx.Bind(&input); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid username")
+		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 	user := &models.Users{
 		Username: input.Username,
 	}
 	userID, err := h.useCases.User.CreateUserUseCase(user)
 	if err != nil {
-		if errors.Is(err, mError.ErrUserInvalid) {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid username")
+		switch {
+		case errors.Is(err, mError.ErrUserInvalid):
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		case errors.Is(err, mError.ErrUserAlreadyUsed):
+			return echo.NewHTTPError(http.StatusConflict, "Username already used")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
-		if errors.Is(err, mError.ErrUserAlreadyUsed) {
-			return echo.NewHTTPError(http.StatusConflict, "username already used")
-		}
-		return echo.NewHTTPError(http.StatusInternalServerError, mError.ErrCantCreateUserDB)
 	}
 	return ctx.JSON(http.StatusCreated, struct {
 		ID string `json:"id"`

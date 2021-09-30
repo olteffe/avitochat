@@ -34,7 +34,7 @@ func (h *Handler) GetMessagesHandler(ctx echo.Context) error {
 	}
 	allMessages, err := h.useCases.Message.GetMessagesUseCase(message)
 	if err != nil {
-		if errors.Is(err, mErr.ErrChatIdInvalid) {
+		if errors.Is(err, mErr.ErrUserOrChat) {
 			return echo.NewHTTPError(http.StatusNotFound, "Chat not found")
 		}
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -59,15 +59,18 @@ func (h *Handler) SendMessageHandler(ctx echo.Context) error {
 	}
 	messageID, err := h.useCases.Message.SendMessageUseCase(message)
 	if err != nil {
-		if errors.Is(err, mErr.ErrUserIdInvalid) || errors.Is(err, mErr.ErrChatIdInvalid) {
+		switch {
+		case errors.Is(err, mErr.ErrChatIdInvalid):
 			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
-		}
-		if errors.Is(err, mErr.ErrUserOrChat) {
+		case errors.Is(err, mErr.ErrUserIdInvalid):
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		case errors.Is(err, mErr.ErrUserOrChat):
 			return echo.NewHTTPError(http.StatusNotFound, "User or chat not found")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
 	}
-	return ctx.JSON(http.StatusOK, struct {
+	return ctx.JSON(http.StatusCreated, struct {
 		ID string `json:"id"`
 	}{
 		messageID,

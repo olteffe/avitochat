@@ -68,9 +68,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/createChat_201'
         "400":
-          description: Bad Request
+          description: Bad request
         "500":
-          description: Internal Server Error
+          description: Internal server error
   /chats/get:
     post:
       tags:
@@ -125,7 +125,7 @@ paths:
         "404":
           description: User or chat not found
         "500":
-          description: Internal Server Error
+          description: Internal server error
   /messages/get:
     post:
       tags:

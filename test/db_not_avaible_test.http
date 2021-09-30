@@ -1,0 +1,100 @@
+// make sure the database is not available before running
+// Test 1. Create new user(repository not available)
+POST http://{{host}}/users/add
+Content-Type: application/json
+
+{
+  "username": "user_1"
+}
+> {% client.global.clearAll()// reset all global variables
+    client.test("Test #1. Response status code is 500", function() {
+        client.assert(response.status === 500, "Response status is not 500");
+    });
+    client.test("Test #1. Response body", function() {
+        client.assert(response.body["message"] === "Internal server error", "Response body is not 'Internal server error'");
+    });
+    client.test("Test #1. Response content-type is json", function() {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+%}
+###
+// Test 2. Create new chat(repository not available).
+POST http://{{host}}/chats/add
+Content-Type: application/json
+
+{
+  "name": "chat_1",
+  "users": ["{{$uuid}}", "{{$uuid}}"]
+}
+> {% client.test("Test #2. Response status code is 500", function() {
+        client.assert(response.status === 500, "Response status is not 500");
+    });
+    client.test("Test #2. Response body", function() {
+        client.assert(response.body["message"] === "Internal server error", "Response body is not 'Internal server error'");
+    });
+    client.test("Test #2. Response content-type is json", function() {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+%}
+###
+// Test 3. Add new message(repository not available).
+POST http://{{host}}/messages/add
+Content-Type: application/json
+
+{
+  "chat": "{{$uuid}}",
+  "author": "{{$uuid}}",
+  "text": "chat_message_1_from_user_1"
+}
+> {% client.test("Test #3. Response status code is 500", function() {
+        client.assert(response.status === 500, "Response status is not 500");
+    });
+    client.test("Test #3. Response body check", function() {
+        client.assert(response.body["message"] === "Internal server error", "Response body is not 'Internal server error'");
+    });
+    client.test("Response content-type is json", function() {
+	    const type = response.contentType.mimeType;
+	    client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+	});
+%}
+###
+// Test 4. Get messages(repository not available)
+POST http://{{host}}/messages/get
+Content-Type: application/json
+
+{
+  "chat": "{{$uuid}}"
+}
+> {% client.test("Test #4. Response status code is 500", function() {
+        client.assert(response.status === 500, "Response status is not 500");
+    });
+    client.test("Test #4. Response content-type is json", function() {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+    client.test("Test #4. Response body is valid", function() {
+        client.assert(response.body["message"] === "Internal server error", "Response body is not 'Internal server error'");
+    });
+%}
+###
+// Test 5. Get user chats(repository not available)
+POST http://{{host}}/chats/get
+Content-Type: application/json
+
+{
+  "user": "{{$uuid}}"
+}
+> {% client.test("Test #5. Response status code is 500", function() {
+        client.assert(response.status === 500, "Response status is not 500");
+    });
+    client.test("Test #5. Response content-type is json", function() {
+        var type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+    client.test("Test #5. Response body is valid", function() {
+        client.assert(response.body["message"] === "Internal server error", "Response body is not 'Internal server error'");
+    });
+%}
+###
