@@ -20,7 +20,7 @@ Content-Type: application/json
     });
 %}
 ###
-// Test 2. Create new user(valid username) for test#TODO
+// Test 2. Create new user(valid username) for test #6
 POST http://{{host}}/users/add
 Content-Type: application/json
 
@@ -140,7 +140,7 @@ Content-Type: application/json
     });
 %}
 ###
-// Test 10. Create new chat(count of users is invalid). Get uuid from test 1.0 and 1.1 or read from db
+// Test 10. Create new chat(count of users is invalid). Get uuid from test #1
 POST http://{{host}}/chats/add
 Content-Type: application/json
 

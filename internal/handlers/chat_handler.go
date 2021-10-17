@@ -9,11 +9,6 @@ import (
 	"github.com/olteffe/avitochat/internal/models"
 )
 
-// user used for GetChatHandler
-type user struct {
-	ID string `json:"id"`
-}
-
 // initChatRoutes - Unites paths
 func (h *Handler) initChatRoutes(api *echo.Group) {
 	chats := api.Group("/chats")
@@ -60,11 +55,13 @@ func (h *Handler) CreateChatHandler(ctx echo.Context) error {
 
 // GetChatHandler - Get a list of user's chats
 func (h *Handler) GetChatHandler(ctx echo.Context) error {
-	var userID user
-	if err := ctx.Bind(&userID); err != nil {
+	var input struct {
+		ID string `json:"user"`
+	}
+	if err := ctx.Bind(&input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
-	allChats, err := h.useCases.Chat.GetChatUseCase(userID.ID)
+	allChats, err := h.useCases.Chat.GetChatUseCase(input.ID)
 	if err != nil {
 		switch {
 		case errors.Is(err, mError.ErrUserInvalid):

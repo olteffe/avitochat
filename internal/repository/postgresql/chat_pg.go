@@ -75,8 +75,27 @@ func (pg *ChatPg) ExistenceUser(userId string) error {
 // GetChatRepository - Get user chats
 func (pg *ChatPg) GetChatRepository(userID string) ([]*models.Chats, error) {
 	var allChats []*models.Chats
-	chats := pg.db.Table("chats").Where("user_id = ?", userID).
-		Order("created_at desc").Scan(&allChats)
+	query := fmt.Sprintf(`
+		SELECT temp.id, temp.name, temp.created_at
+		FROM
+		(
+			SELECT chats.id, chats.name, chats.created_at,
+				(
+					SELECT GREATEST(chats.created_at,
+						(
+							SELECT created_at
+							FROM messages
+							WHERE chat_id = chats.id
+							ORDER BY created_at DESC
+							LIMIT 1
+						)
+					)
+				) AS last_message
+			FROM chats JOIN onlines ON chats.id = onlines.chat_id
+			WHERE onlines.user_id = ?
+			ORDER BY last_message
+		) AS temp`)
+	chats := pg.db.Raw(query, userID).Scan(&allChats)
 	if chats.Error != nil {
 		return nil, fmt.Errorf("GetChatRepository: %w", mError.ErrDB)
 	}
