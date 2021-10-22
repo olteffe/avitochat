@@ -84,9 +84,9 @@ Content-Type: application/json
 }
 > {% client.test("Test #6. Request executed successfully", function() {
         client.assert(response.status === 201, "Response status is not 201");
-        client.global.set("chat_1_ID", response.body["id"]);
     });
-    client.log("chat_1_ID saved. id=" + client.global.get("chat_1_ID"));// set global variable {{chat_1_ID}}
+    client.global.set("chat_1_ID", response.body["id"]);// set global variable {{chat_1_ID}}
+    client.log("chat_1_ID saved. id=" + client.global.get("chat_1_ID"));
     client.test("Test #6. Response content-type is json", function() {
         var type = response.contentType.mimeType;
         client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
@@ -103,9 +103,9 @@ Content-Type: application/json
 }
 > {% client.test("Test #7. Request executed successfully", function() {
         client.assert(response.status === 201, "Response status is not 201");
-        client.global.set("chat_2_ID", response.body["id"]);
     });
-    client.log("chat_2_ID saved. id=" + client.global.get("chat_2_ID"));// set global variable {{chat_2_ID}}
+    client.global.set("chat_2_ID", response.body["id"]);// set global variable {{chat_2_ID}}
+    client.log("chat_2_ID saved. id=" + client.global.get("chat_2_ID"));
     client.test("Test #7. Response content-type is json", function() {
         var type = response.contentType.mimeType;
         client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
@@ -308,8 +308,8 @@ Content-Type: application/json
         client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
     });
     client.test("Test #19. Response body is valid", function() {
-        client.assert(response.body[0]["id"] === "{{chat_2_ID}}", "Response body is not valid");
-        client.assert(response.body[1]["id"] === "{{chat_1_ID}}", "Response body is not valid");
+        client.assert(response.body[0]["id"] === client.global.get("chat_2_ID"), "Response body is not valid");
+        client.assert(response.body[1]["id"] === client.global.get("chat_1_ID"), "Response body is not valid");
     });
 %}
 ###

@@ -99,5 +99,12 @@ func (pg *ChatPg) GetChatRepository(userID string) ([]*models.Chats, error) {
 	if chats.Error != nil {
 		return nil, fmt.Errorf("GetChatRepository: %w", mError.ErrDB)
 	}
+	for _, chat := range allChats { // Don't do it, Dudley!(c)
+		err := pg.db.Table("onlines").Select("user_id").Where("chat_id = ?", chat.ID).
+			Pluck("user_id", &chat.Users).Error
+		if err != nil {
+			return nil, fmt.Errorf("GetChatRepository: %w", mError.ErrDB)
+		}
+	}
 	return allChats, nil
 }
