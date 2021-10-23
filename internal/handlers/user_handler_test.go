@@ -1,92 +1,101 @@
 package handlers
 
 import (
-	"context"
-	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
-	"net/http"
+	"bytes"
+	"fmt"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
-	mErr "github.com/olteffe/avitochat/internal/message_error"
+	"github.com/golang/mock/gomock"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+
+	mError "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
+	"github.com/olteffe/avitochat/internal/usecase"
 	"github.com/olteffe/avitochat/internal/usecase/mocks"
 )
 
-func TestCreateUser(t *testing.T) {
-	testUser := &models.Users{
-		ID:       uuid.New(),
-		Username: "user_1",
+func TestUserHandler_Create(t *testing.T) {
+	type args struct {
+		user *models.Users
 	}
-
+	type mockBehavior func(r *mock_usecase.MockUser, args args)
 	tests := []struct {
-		testName     string
-		expectations func(ctx context.Context, svc *mocks.User)
-		inputBody    string
-		responseBody string
-		err          error
-		code         int
+		name                 string
+		inputBody            string
+		input                args
+		mock                 mockBehavior
+		expectedStatusCode   int
+		expectedResponseBody string
 	}{
 		{
-			testName: "valid",
-			expectations: func(ctx context.Context, svc *mocks.User) {
-				svc.On("CreateUserUseCase", testUser).Return(testUser.ID, nil)
-			},
+			name:      "Valid",
 			inputBody: `{"username": "user_1"}`,
-			code:      http.StatusCreated,
-		},
-		{
-			testName:     "missing parameter",
-			expectations: func(ctx context.Context, svc *mocks.User) {},
-			inputBody:    `{}`,
-			err:          errors.New("invalid username"),
-			code:         http.StatusBadRequest,
-		},
-		{
-			testName:     "bad request",
-			expectations: func(ctx context.Context, svc *mocks.User) {},
-			inputBody:    `{some"}`,
-			err:          errors.New("invalid username"),
-			code:         http.StatusBadRequest,
-		},
-		{
-			testName: "service error",
-			expectations: func(ctx context.Context, svc *mocks.User) {
-				svc.On("CreateUserUseCase", ctx, testUser).Return(nil, mErr.ErrDB)
+			input: args{
+				&models.Users{
+					Username: "user_1",
+				},
 			},
-			inputBody: `{"username": "user_1"}`,
-			err:       errors.New("can't create user: database error"),
-			code:      http.StatusInternalServerError,
+			mock: func(r *mock_usecase.MockUser, args args) {
+				r.EXPECT().CreateUserUseCase(args.user).Return("845ac772-cb49-433c-a871-0a98af34f7fb", nil)
+			},
+			expectedStatusCode:   201,
+			expectedResponseBody: fmt.Sprintf(`{"id":"845ac772-cb49-433c-a871-0a98af34f7fb"}` + "\n"),
 		},
 		{
-			testName: "already used",
-			expectations: func(ctx context.Context, svc *mocks.User) {
-				svc.On("CreateUserUseCase", ctx, testUser).Return(nil, mErr.ErrDB)
+			name:      "Bad request",
+			inputBody: `{"username": ""}`,
+			input: args{
+				&models.Users{
+					Username: "",
+				},
 			},
+			mock: func(r *mock_usecase.MockUser, args args) {
+				r.EXPECT().CreateUserUseCase(args.user).Return("", mError.ErrUserInvalid)
+			},
+			expectedStatusCode:   400,
+			expectedResponseBody: fmt.Sprintf(`{"message":"Bad request"}` + "\n"),
+		},
+		{
+			name:      "The repository is not available",
 			inputBody: `{"username": "user_1"}`,
-			err:       errors.New("username already used"),
-			code:      http.StatusConflict,
+			input: args{
+				&models.Users{
+					Username: "user_1",
+				},
+			},
+			mock: func(r *mock_usecase.MockUser, args args) {
+				r.EXPECT().CreateUserUseCase(args.user).Return("", mError.ErrDB)
+			},
+			expectedStatusCode:   500,
+			expectedResponseBody: fmt.Sprintf(`{"message":"Internal server error"}` + "\n"),
 		},
 	}
 
 	for _, test := range tests {
-		t.Logf("running %v", test.testName)
+		t.Run(test.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
 
-		// initialize the echo context to use for the test
-		e := echo.New()
-		r, err := http.NewRequest(echo.POST, "/users/add", strings.NewReader(test.inputBody))
-		if err != nil {
-			t.Fatal("could not create request")
-		}
-		r.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		w := httptest.NewRecorder()
-		ctx := e.NewContext(r, w)
-		svc := &mocks.User{}
-		test.expectations(ctx.Request().Context(), svc)
-		assert.Equal(t, w.Code, test.code)
-		assert.Equal(t, w.Body.String(), test.expectations)
+			repo := mock_usecase.NewMockUser(c)
+			test.mock(repo, test.input)
+
+			useCase := &usecase.UseCase{User: repo}
+			handler := Handler{useCase}
+
+			app := echo.New()
+			handler.Init(app)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("POST", "/users/add",
+				bytes.NewBufferString(test.inputBody))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+			app.ServeHTTP(w, req)
+
+			assert.Equal(t, w.Code, test.expectedStatusCode)
+			assert.Equal(t, w.Body.String(), test.expectedResponseBody)
+		})
 	}
 }
