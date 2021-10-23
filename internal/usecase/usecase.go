@@ -5,18 +5,18 @@ import (
 	"github.com/olteffe/avitochat/internal/repository"
 )
 
-//go:generate mockery --dir . --name Chat --output ./mocks
+//go:generate mockgen -destination ./mocks/chat.go -package mock_usecase github.com/olteffe/avitochat/internal/usecase Chat
 type Chat interface {
 	CreateChatUseCase(chat *models.Chats) (string, error)
 	GetChatUseCase(userId string) ([]*models.Chats, error)
 }
 
-//go:generate mockery --dir . --name User --output ./mocks
+//go:generate mockgen -destination ./mocks/user.go -package mock_usecase github.com/olteffe/avitochat/internal/usecase User
 type User interface {
 	CreateUserUseCase(user *models.Users) (string, error)
 }
 
-//go:generate mockery --dir . --name Message --output ./mocks
+//go:generate mockgen -destination ./mocks/message.go -package mock_usecase github.com/olteffe/avitochat/internal/usecase Message
 type Message interface {
 	SendMessageUseCase(message *models.Messages) (string, error)
 	GetMessagesUseCase(message *models.Messages) ([]*models.Messages, error)

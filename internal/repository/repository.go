@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-//go:generate mockery --dir . --name Chat --output ./mocks
+//go:generate mockgen -destination ./mocks/chat.go -package mock_repository github.com/olteffe/avitochat/internal/repository Chat
 type Chat interface {
 	CreateChatRepository(chat *models.Chats) (string, error)
 	ExistenceChatName(chat *models.Chats) error
@@ -14,13 +14,13 @@ type Chat interface {
 	ExistenceUser(userId string) error
 }
 
-//go:generate mockery --dir . --name User --output ./mocks
+//go:generate mockgen -destination ./mocks/user.go -package mock_repository github.com/olteffe/avitochat/internal/repository User
 type User interface {
 	CreateUserRepository(user *models.Users) (string, error)
 	ExistenceUser(user *models.Users) error
 }
 
-//go:generate mockery --dir . --name Message --output ./mocks
+//go:generate mockgen -destination ./mocks/message.go -package mock_repository github.com/olteffe/avitochat/internal/repository Message
 type Message interface {
 	GetMessagesRepository(message *models.Messages) ([]*models.Messages, error)
 	ExistenceChat(message *models.Messages) error

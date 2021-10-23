@@ -23,7 +23,7 @@
 * [Echo](https://github.com/labstack/echo) - web framework.
 * [Gorm](https://github.com/go-gorm/gorm) - ORM для Golang.
 * [Google/uuid](https://github.com/google/uuid) - генерирует и проверяет UUID на основе RFC4122 и DCE 1.1.
-* [Mockery](https://github.com/vektra/mockery) - генератор кода для имитации интерфейсов Golang.
+* [Mockgen](https://github.com/golang/mock) - генератор кода для имитации интерфейсов Golang.
 * [Testify](https://github.com/stretchr/testify/) - framework для написания тестов на Golang.
 
 Документация
