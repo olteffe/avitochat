@@ -16,7 +16,7 @@ import (
 	"github.com/olteffe/avitochat/internal/usecase/mocks"
 )
 
-func TestUserHandler_Create(t *testing.T) {
+func TestHandler_CreateUserHandler(t *testing.T) {
 	type args struct {
 		user *models.Users
 	}
@@ -44,7 +44,7 @@ func TestUserHandler_Create(t *testing.T) {
 			expectedResponseBody: fmt.Sprintf(`{"id":"845ac772-cb49-433c-a871-0a98af34f7fb"}` + "\n"),
 		},
 		{
-			name:      "Bad request",
+			name:      "Bad request: missing username",
 			inputBody: `{"username": ""}`,
 			input: args{
 				&models.Users{
@@ -56,6 +56,20 @@ func TestUserHandler_Create(t *testing.T) {
 			},
 			expectedStatusCode:   400,
 			expectedResponseBody: fmt.Sprintf(`{"message":"Bad request"}` + "\n"),
+		},
+		{
+			name:      "username has already been used",
+			inputBody: `{"username": "user_1"}`,
+			input: args{
+				&models.Users{
+					Username: "user_1",
+				},
+			},
+			mock: func(r *mock_usecase.MockUser, args args) {
+				r.EXPECT().CreateUserUseCase(args.user).Return("", mError.ErrUserAlreadyUsed)
+			},
+			expectedStatusCode:   409,
+			expectedResponseBody: fmt.Sprintf(`{"message":"Username already used"}` + "\n"),
 		},
 		{
 			name:      "The repository is not available",
@@ -94,8 +108,8 @@ func TestUserHandler_Create(t *testing.T) {
 
 			app.ServeHTTP(w, req)
 
-			assert.Equal(t, w.Code, test.expectedStatusCode)
-			assert.Equal(t, w.Body.String(), test.expectedResponseBody)
+			assert.Equal(t, test.expectedStatusCode, w.Code)
+			assert.Equal(t, test.expectedResponseBody, w.Body.String())
 		})
 	}
 }

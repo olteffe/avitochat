@@ -66,6 +66,8 @@ func (h *Handler) GetChatHandler(ctx echo.Context) error {
 		switch {
 		case errors.Is(err, mError.ErrUserInvalid):
 			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		case errors.Is(err, mError.ErrChatInvalid):
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 		case errors.Is(err, mError.ErrUserIdInvalid):
 			return echo.NewHTTPError(http.StatusNotFound, "User not found")
 		case errors.Is(err, mError.ErrDB):
