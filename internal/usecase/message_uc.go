@@ -20,6 +20,10 @@ func NewMessageUseCase(repo repository.Message) *MessageUseCase {
 }
 
 func (uc *MessageUseCase) GetMessagesUseCase(message *models.Messages) ([]*models.Messages, error) {
+	// simple input validation
+	if _, err := uuid.Parse(message.Chat); err != nil {
+		return nil, fmt.Errorf("GetMessagesUseCase: %w", mErr.ErrChatIdInvalid)
+	}
 	// db validation
 	if err := uc.repo.ExistenceChat(message); err != nil {
 		return nil, fmt.Errorf("GetMessagesUseCase: %w", err)

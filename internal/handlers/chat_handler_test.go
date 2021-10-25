@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	mError "github.com/olteffe/avitochat/internal/message_error"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
+	mError "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
 	"github.com/olteffe/avitochat/internal/usecase"
 	"github.com/olteffe/avitochat/internal/usecase/mocks"
@@ -176,8 +176,8 @@ func TestHandler_GetChatHandler(t *testing.T) {
 	uuidUser2 := uuid.New().String()
 	uuidChat1 := uuid.New()
 	uuidChat2 := uuid.New()
-	time1 := time.Now()
-	time2 := time.Now()
+	time1 := time.Now().Round(time.Microsecond)
+	time2 := time.Now().Add(time.Second * 5).Round(time.Microsecond)
 	type args struct {
 		user string
 	}
@@ -221,8 +221,9 @@ func TestHandler_GetChatHandler(t *testing.T) {
 			},
 			expectedStatusCode: 200,
 			expectedResponseBody: fmt.Sprintf(`[{"id": "%s", "name": "chat_1", "users": ["%s", "%s"], 
-				"created_at": "%s"}, {"id": "%s", "name": "chat_1", "users": ["%s", "%s"], "created_at": "%s"}]`,
-				uuidChat1, uuidUser1, uuidUser2, time2, uuidChat2, uuidUser1, uuidUser2, time1),
+				"created_at": "%s"}, {"id": "%s", "name": "chat_2", "users": ["%s", "%s"], "created_at": "%s"}]`,
+				uuidChat1, uuidUser1, uuidUser2, time2.Format(time.RFC3339Nano), uuidChat2, uuidUser1, uuidUser2,
+				time1.Format(time.RFC3339Nano)),
 		},
 		{
 			name:      "input data is invalid",
@@ -235,6 +236,18 @@ func TestHandler_GetChatHandler(t *testing.T) {
 			},
 			expectedStatusCode:   400,
 			expectedResponseBody: fmt.Sprintf(`{"message": "Bad request"}`),
+		},
+		{
+			name:      "user ID not found in database",
+			inputBody: fmt.Sprintf(`{"user": "%s"}`, uuidUser1),
+			inputUser: args{
+				user: uuidUser1,
+			},
+			mock: func(r *mock_usecase.MockChat, args args) {
+				r.EXPECT().GetChatUseCase(args.user).Return(nil, mError.ErrUserIdInvalid)
+			},
+			expectedStatusCode:   404,
+			expectedResponseBody: fmt.Sprintf(`{"message": "User not found"}`),
 		},
 		{
 			name:      "Database error",

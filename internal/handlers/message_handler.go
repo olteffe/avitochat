@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	mErr "github.com/olteffe/avitochat/internal/message_error"
 	"github.com/olteffe/avitochat/internal/models"
@@ -26,18 +25,21 @@ func (h *Handler) GetMessagesHandler(ctx echo.Context) error {
 	if err := ctx.Bind(&chatID); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
-	if _, err := uuid.Parse(chatID.ID); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
-	}
 	message := &models.Messages{
 		Chat: chatID.ID,
 	}
 	allMessages, err := h.useCases.Message.GetMessagesUseCase(message)
 	if err != nil {
-		if errors.Is(err, mErr.ErrUserOrChat) {
+		switch {
+		case errors.Is(err, mErr.ErrChatIdInvalid):
+			return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		case errors.Is(err, mErr.ErrUserOrChat):
 			return echo.NewHTTPError(http.StatusNotFound, "Chat not found")
+		case errors.Is(err, mErr.ErrDB):
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 	return ctx.JSON(http.StatusOK, allMessages)
 }
