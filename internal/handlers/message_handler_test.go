@@ -75,7 +75,7 @@ func TestHandler_GetMessagesHandler(t *testing.T) {
 		},
 		{
 			name:      "invalid input data",
-			inputBody: fmt.Sprintf(`{"chat": ""}`),
+			inputBody: `{"chat": ""}`,
 			input: args{
 				&models.Messages{
 					Chat: "",
@@ -85,7 +85,7 @@ func TestHandler_GetMessagesHandler(t *testing.T) {
 				r.EXPECT().GetMessagesUseCase(args.message).Return(nil, mError.ErrChatIdInvalid)
 			},
 			expectedStatusCode:   400,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Bad request"}`),
+			expectedResponseBody: `{"message": "Bad request"}`,
 		},
 		{
 			name:      "chat id not found in the database",
@@ -99,7 +99,7 @@ func TestHandler_GetMessagesHandler(t *testing.T) {
 				r.EXPECT().GetMessagesUseCase(args.message).Return(nil, mError.ErrUserOrChat)
 			},
 			expectedStatusCode:   404,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Chat not found"}`),
+			expectedResponseBody: `{"message": "Chat not found"}`,
 		},
 		{
 			name:      "database error",
@@ -113,7 +113,7 @@ func TestHandler_GetMessagesHandler(t *testing.T) {
 				r.EXPECT().GetMessagesUseCase(args.message).Return(nil, mError.ErrDB)
 			},
 			expectedStatusCode:   500,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Internal server error"}`),
+			expectedResponseBody: `{"message": "Internal server error"}`,
 		},
 	}
 	for _, test := range tests {
@@ -190,7 +190,7 @@ func TestHandler_SendMessageHandler(t *testing.T) {
 				r.EXPECT().SendMessageUseCase(args.message).Return("", mError.ErrChatIdInvalid)
 			},
 			expectedStatusCode:   400,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Bad request"}`),
+			expectedResponseBody: `{"message": "Bad request"}`,
 		},
 		{
 			name:      "chat/user ID not in db",
@@ -206,7 +206,7 @@ func TestHandler_SendMessageHandler(t *testing.T) {
 				r.EXPECT().SendMessageUseCase(args.message).Return("", mError.ErrUserOrChat)
 			},
 			expectedStatusCode:   404,
-			expectedResponseBody: fmt.Sprintf(`{"message": "User or chat not found"}`),
+			expectedResponseBody: `{"message": "User or chat not found"}`,
 		},
 		{
 			name:      "db error",
@@ -222,7 +222,7 @@ func TestHandler_SendMessageHandler(t *testing.T) {
 				r.EXPECT().SendMessageUseCase(args.message).Return("", mError.ErrDB)
 			},
 			expectedStatusCode:   500,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Internal server error"}`),
+			expectedResponseBody: `{"message": "Internal server error"}`,
 		},
 	}
 	for _, test := range tests {

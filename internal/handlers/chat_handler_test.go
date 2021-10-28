@@ -69,7 +69,7 @@ func TestHandler_CreateChatHandler(t *testing.T) {
 				r.EXPECT().CreateChatUseCase(args.chat).Return("", mError.ErrUserInvalid)
 			},
 			expectedStatusCode:   400,
-			expectedResponseBody: fmt.Sprintf(`{"message":"Bad request"}`),
+			expectedResponseBody: `{"message":"Bad request"}`,
 		},
 		{
 			name:      "invalid input data: skipped chat name",
@@ -87,7 +87,7 @@ func TestHandler_CreateChatHandler(t *testing.T) {
 				r.EXPECT().CreateChatUseCase(args.chat).Return("", mError.ErrChatInvalid)
 			},
 			expectedStatusCode:   400,
-			expectedResponseBody: fmt.Sprintf(`{"message":"Bad request"}`),
+			expectedResponseBody: `{"message":"Bad request"}`,
 		},
 		{
 			name:      "invalid input data: one user is given",
@@ -104,7 +104,7 @@ func TestHandler_CreateChatHandler(t *testing.T) {
 				r.EXPECT().CreateChatUseCase(args.chat).Return("", mError.ErrCountUsers)
 			},
 			expectedStatusCode:   400,
-			expectedResponseBody: fmt.Sprintf(`{"message":"Bad request"}`),
+			expectedResponseBody: `{"message":"Bad request"}`,
 		},
 		{
 			name:      "the chat name has already been used",
@@ -122,7 +122,7 @@ func TestHandler_CreateChatHandler(t *testing.T) {
 				r.EXPECT().CreateChatUseCase(args.chat).Return("", mError.ErrChatInvalid)
 			},
 			expectedStatusCode:   400,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Bad request"}`),
+			expectedResponseBody: `{"message": "Bad request"}`,
 		},
 		{
 			name:      "Database error",
@@ -140,7 +140,7 @@ func TestHandler_CreateChatHandler(t *testing.T) {
 				r.EXPECT().CreateChatUseCase(args.chat).Return("", mError.ErrDB)
 			},
 			expectedStatusCode:   500,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Internal server error"}`),
+			expectedResponseBody: `{"message": "Internal server error"}`,
 		},
 	}
 
@@ -227,7 +227,7 @@ func TestHandler_GetChatHandler(t *testing.T) {
 		},
 		{
 			name:      "input data is invalid",
-			inputBody: fmt.Sprintf(`{"user": ""}`),
+			inputBody: `{"user": ""}`,
 			inputUser: args{
 				user: "",
 			},
@@ -235,7 +235,15 @@ func TestHandler_GetChatHandler(t *testing.T) {
 				r.EXPECT().GetChatUseCase(args.user).Return(nil, mError.ErrChatInvalid)
 			},
 			expectedStatusCode:   400,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Bad request"}`),
+			expectedResponseBody: `{"message": "Bad request"}`,
+		},
+		{
+			name:                 "input data is invalid(all)",
+			inputBody:            `{"user"vxvx}`,
+			inputUser:            args{},
+			mock:                 func(r *mock_usecase.MockChat, args args) {},
+			expectedStatusCode:   400,
+			expectedResponseBody: `{"message": "Bad request"}`,
 		},
 		{
 			name:      "user ID not found in database",
@@ -247,7 +255,7 @@ func TestHandler_GetChatHandler(t *testing.T) {
 				r.EXPECT().GetChatUseCase(args.user).Return(nil, mError.ErrUserIdInvalid)
 			},
 			expectedStatusCode:   404,
-			expectedResponseBody: fmt.Sprintf(`{"message": "User not found"}`),
+			expectedResponseBody: `{"message": "User not found"}`,
 		},
 		{
 			name:      "Database error",
@@ -259,7 +267,7 @@ func TestHandler_GetChatHandler(t *testing.T) {
 				r.EXPECT().GetChatUseCase(args.user).Return(nil, mError.ErrDB)
 			},
 			expectedStatusCode:   500,
-			expectedResponseBody: fmt.Sprintf(`{"message": "Internal server error"}`),
+			expectedResponseBody: `{"message": "Internal server error"}`,
 		},
 	}
 
