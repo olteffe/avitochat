@@ -76,10 +76,20 @@ func (pg *ChatPg) ExistenceUser(userId string) error {
 func (pg *ChatPg) GetChatRepository(userID string) ([]*models.Chats, error) {
 	var allChats []*models.Chats
 	query := `
-		SELECT temp.id, temp.name, temp.created_at
+		SELECT temp.id, temp.name, temp.users, temp.created_at
 		FROM
 		(
-			SELECT chats.id, chats.name, chats.created_at,
+		    WITH users_array AS (
+		    SELECT chat_id, array_agg(user_id) AS users
+				FROM onlines
+				GROUP BY chat_id
+				HAVING chat_id IN (
+		            SELECT chat_id
+		            FROM onlines
+		            WHERE user_id = ?
+		        )
+		    )
+			SELECT chats.id, chats.name, users_array.users, chats.created_at,
 				(
 					SELECT GREATEST(chats.created_at,
 						(
@@ -92,19 +102,13 @@ func (pg *ChatPg) GetChatRepository(userID string) ([]*models.Chats, error) {
 					)
 				) AS last_message
 			FROM chats JOIN onlines ON chats.id = onlines.chat_id
+		        JOIN users_array ON users_array.chat_id = onlines.chat_id
 			WHERE onlines.user_id = ?
 			ORDER BY last_message
 		) AS temp`
-	chats := pg.db.Raw(query, userID).Scan(&allChats)
+	chats := pg.db.Raw(query, userID, userID).Scan(&allChats)
 	if chats.Error != nil {
 		return nil, fmt.Errorf("GetChatRepository: %w", mError.ErrDB)
-	}
-	for _, chat := range allChats { // Don't do it, Dudley!(c)
-		err := pg.db.Table("onlines").Select("user_id").Where("chat_id = ?", chat.ID).
-			Pluck("user_id", &chat.Users).Error
-		if err != nil {
-			return nil, fmt.Errorf("GetChatRepository: %w", mError.ErrDB)
-		}
 	}
 	return allChats, nil
 }

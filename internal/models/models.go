@@ -13,7 +13,7 @@ type Response struct {
 type Chats struct {
 	ID        uuid.UUID `json:"id" gorm:"column:id"`
 	Name      string    `json:"name" gorm:"column:name"`
-	Users     []string  `json:"users"`
+	Users     []string  `json:"users" gorm:"column:users"`
 	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
 }
 

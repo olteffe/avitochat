@@ -310,6 +310,8 @@ Content-Type: application/json
     client.test("Test #19. Response body is valid", function() {
         client.assert(response.body[0]["id"] === client.global.get("chat_2_ID"), "Response body is not valid");
         client.assert(response.body[1]["id"] === client.global.get("chat_1_ID"), "Response body is not valid");
+        client.assert(response.body[0]["users"][0] === client.global.get("user_1_ID"), "Response body is not valid");
+        client.assert(response.body[0]["users"][1] === client.global.get("user_2_ID"), "Response body is not valid");
     });
 %}
 ###
