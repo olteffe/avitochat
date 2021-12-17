@@ -32,7 +32,11 @@ func (uc *ChatUseCase) CreateChatUseCase(chat *models.Chats) (string, error) {
 		if _, err := uuid.Parse(id); err != nil {
 			return "", fmt.Errorf("CreateChatUseCase: %w", mError.ErrUserInvalid)
 		}
+		if err := uc.repo.ExistenceUser(id); err != nil {
+			return "", fmt.Errorf("CreateChatUseCase: %w", mError.ErrUserInvalid)
+		}
 	}
+
 	// uniqueness check
 	err := uc.repo.ExistenceChatName(chat)
 	if err != nil {
